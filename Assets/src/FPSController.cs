@@ -327,4 +327,5 @@ public class FPSController : MonoBehaviour
         Vector3 spherePosition = transform.position - new Vector3(0, controller.height / 2 - controller.radius + 0.1f, 0);
         Gizmos.DrawWireSphere(spherePosition, controller.radius);
     }
+    
 }
