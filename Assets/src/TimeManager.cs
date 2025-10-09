@@ -32,10 +32,10 @@ public class TimeManager : MonoBehaviour
         
         if (directionalLight == null)
         {
-            Debug.LogWarning("Nessuna Directional Light trovata nella scena!");
+            Debug.LogWarning("No Directional Light found in the scene!");
         }
 
-        // Imposta l'orario di sveglia
+        // Set wake up time
         config.currentHour = config.wakeUpHour;
         config.currentMinute = config.wakeUpMinute;
         config.playerIsAwake = false;
@@ -118,54 +118,54 @@ public class TimeManager : MonoBehaviour
     {
         float currentTime = config.currentHour + (config.currentMinute / 60f);
 
-        // Sveglia
+        // Wake up
         if (!hasWokenUp && currentTime >= config.wakeUpHour)
         {
             hasWokenUp = true;
             config.playerIsAwake = true;
             OnWakeUp?.Invoke();
-            Debug.Log($"Buongiorno! Oggi è {config.GetDayName()}");
+            Debug.Log($"Good morning! Today is {config.GetDayName()}");
         }
 
-        // Apertura mattutina supermercato
+        // Morning shop opening
         if (!hasNotifiedMorningOpen && currentTime >= config.morningOpenTime)
         {
             hasNotifiedMorningOpen = true;
             OnShopOpenTime?.Invoke();
-            Debug.Log("È ora di aprire il supermercato!");
+            Debug.Log("Time to open the supermarket!");
         }
 
-        // Chiusura pranzo
+        // Lunch closing
         if (!hasNotifiedLunchClose && currentTime >= config.lunchCloseTime)
         {
             hasNotifiedLunchClose = true;
             OnLunchCloseTime?.Invoke();
-            Debug.Log("Orario di chiusura pranzo!");
+            Debug.Log("Lunch break closing time!");
         }
 
-        // Riapertura pomeridiana
+        // Afternoon reopening
         if (!hasNotifiedAfternoonOpen && currentTime >= config.afternoonOpenTime)
         {
             hasNotifiedAfternoonOpen = true;
             OnAfternoonOpenTime?.Invoke();
-            Debug.Log("È ora di riaprire il supermercato!");
+            Debug.Log("Time to reopen the supermarket!");
         }
 
-        // Chiusura serale
+        // Evening closing
         if (!hasNotifiedEveningClose && currentTime >= config.eveningCloseTime)
         {
             hasNotifiedEveningClose = true;
             OnEveningCloseTime?.Invoke();
-            Debug.Log("Orario di chiusura! Puoi andare al bar.");
+            Debug.Log("Closing time! You can go to the bar now.");
         }
 
-        // Apertura bar
+        // Bar opening
         if (!hasNotifiedBarOpen && currentTime >= config.barOpenTime)
         {
             hasNotifiedBarOpen = true;
             config.isBarOpen = true;
             OnBarOpenTime?.Invoke();
-            Debug.Log("Il bar è aperto!");
+            Debug.Log("The bar is now open!");
         }
     }
 
@@ -186,7 +186,7 @@ public class TimeManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Ritorna l'ora formattata come stringa
+    /// Returns formatted time as string
     /// </summary>
     public string GetFormattedTime()
     {
@@ -196,12 +196,12 @@ public class TimeManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Imposta un nuovo orario di sveglia (da chiamare la sera prima)
+    /// Sets a new wake up time (to be called the night before)
     /// </summary>
     public void SetWakeUpTime(float hour, float minute)
     {
         config.wakeUpHour = hour;
         config.wakeUpMinute = minute;
-        Debug.Log($"Sveglia impostata per le {hour:00}:{minute:00}");
+        Debug.Log($"Alarm set for {hour:00}:{minute:00}");
     }
 }

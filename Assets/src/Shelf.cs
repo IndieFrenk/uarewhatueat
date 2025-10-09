@@ -2,187 +2,102 @@
 using System.Collections.Generic;
 
 /// <summary>
-/// Rappresenta uno scaffale dove posizionare gli oggetti
+/// Optional shelf component for visual feedback and item tracking
+/// Items don't need shelves to be placed - they can be placed on any surface
 /// </summary>
 public class Shelf : MonoBehaviour
 {
-    [Header("Shelf Settings")]
-    [Tooltip("Numero massimo di oggetti su questo scaffale")]
-    public int maxItems = 10;
-    
-    [Tooltip("Spaziatura tra gli oggetti")]
-    public float itemSpacing = 0.3f;
-    
-    [Tooltip("Layer degli oggetti su questo scaffale")]
-    public LayerMask itemLayer;
-    
     [Header("Visual Feedback")]
-    [Tooltip("Colore quando lo scaffale è disponibile")]
-    public Color availableColor = Color.green;
-    
-    [Tooltip("Colore quando lo scaffale è pieno")]
-    public Color fullColor = Color.red;
-    
-    [Tooltip("Renderer dello scaffale per feedback visivo")]
     public Renderer shelfRenderer;
+    public Color normalColor = Color.white;
+    public Color highlightColor = new Color(0.5f, 1f, 0.5f, 1f);
 
-    private List<ShopItem> itemsOnShelf = new List<ShopItem>();
-    private List<Vector3> slotPositions = new List<Vector3>();
+    [Header("Info")]
+    public int itemsOnShelf = 0;
+
+    private Color originalColor;
     private bool isHighlighted = false;
 
     void Start()
     {
-        GenerateSlotPositions();
-    }
-
-    /// <summary>
-    /// Genera le posizioni degli slot sullo scaffale
-    /// </summary>
-    void GenerateSlotPositions()
-    {
-        slotPositions.Clear();
-        
-        // Calcola le dimensioni dello scaffale
-        Bounds bounds = GetComponent<Collider>()?.bounds ?? new Bounds(transform.position, Vector3.one);
-        float shelfWidth = bounds.size.x;
-        float startX = -shelfWidth / 2f;
-        
-        for (int i = 0; i < maxItems; i++)
+        if (shelfRenderer == null)
         {
-            float xPos = startX + (i * itemSpacing) + (itemSpacing / 2f);
-            Vector3 localSlotPos = new Vector3(xPos, 0.1f, 0f);
-            slotPositions.Add(localSlotPos);
+            shelfRenderer = GetComponent<Renderer>();
+            if (shelfRenderer == null)
+                shelfRenderer = GetComponentInChildren<Renderer>();
+        }
+
+        if (shelfRenderer != null && shelfRenderer.material != null)
+        {
+            originalColor = shelfRenderer.material.color;
         }
     }
 
-    /// <summary>
-    /// Trova lo slot più vicino disponibile
-    /// </summary>
-    public Vector3 GetNearestAvailableSlot(Vector3 worldPosition, out bool hasSlot)
+    void Update()
     {
-        hasSlot = false;
+        // Count items on this shelf
+        CountItemsOnShelf();
+    }
+
+    /// <summary>
+    /// Count how many items are placed on this shelf
+    /// </summary>
+    void CountItemsOnShelf()
+    {
+        // Get shelf bounds
+        Collider shelfCollider = GetComponent<Collider>();
+        if (shelfCollider == null) return;
+
+        Bounds bounds = shelfCollider.bounds;
         
-        if (itemsOnShelf.Count >= maxItems)
-        {
-            return Vector3.zero;
-        }
+        // Expand bounds slightly upward to catch items on top
+        bounds.Expand(new Vector3(0f, 0.2f, 0f));
 
-        Vector3 nearestSlot = Vector3.zero;
-        float nearestDistance = float.MaxValue;
-
-        foreach (Vector3 localSlot in slotPositions)
+        // Find all items in this area
+        Collider[] colliders = Physics.OverlapBox(bounds.center, bounds.extents);
+        
+        int count = 0;
+        foreach (Collider col in colliders)
         {
-            Vector3 worldSlot = transform.TransformPoint(localSlot);
-            
-            // Controlla se lo slot è occupato
-            bool occupied = false;
-            foreach (ShopItem item in itemsOnShelf)
+            ShopItem item = col.GetComponent<ShopItem>();
+            if (item != null && item.isPlaced)
             {
-                if (Vector3.Distance(item.transform.position, worldSlot) < 0.2f)
-                {
-                    occupied = true;
-                    break;
-                }
-            }
-            
-            if (!occupied)
-            {
-                float distance = Vector3.Distance(worldPosition, worldSlot);
-                if (distance < nearestDistance)
-                {
-                    nearestDistance = distance;
-                    nearestSlot = worldSlot;
-                    hasSlot = true;
-                }
+                count++;
             }
         }
 
-        return nearestSlot;
+        itemsOnShelf = count;
     }
 
     /// <summary>
-    /// Aggiunge un oggetto allo scaffale
-    /// </summary>
-    public bool AddItem(ShopItem item, Vector3 position)
-    {
-        if (itemsOnShelf.Count >= maxItems)
-        {
-            Debug.Log("Scaffale pieno!");
-            return false;
-        }
-
-        if (!itemsOnShelf.Contains(item))
-        {
-            itemsOnShelf.Add(item);
-            item.PlaceOnShelf(this, position);
-            UpdateVisualFeedback();
-            return true;
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// Rimuove un oggetto dallo scaffale
-    /// </summary>
-    public void RemoveItem(ShopItem item)
-    {
-        if (itemsOnShelf.Contains(item))
-        {
-            itemsOnShelf.Remove(item);
-            UpdateVisualFeedback();
-        }
-    }
-
-    /// <summary>
-    /// Evidenzia lo scaffale
+    /// Highlight this shelf
     /// </summary>
     public void Highlight(bool highlight)
     {
         isHighlighted = highlight;
-        UpdateVisualFeedback();
-    }
 
-    /// <summary>
-    /// Aggiorna il feedback visivo dello scaffale
-    /// </summary>
-    void UpdateVisualFeedback()
-    {
-        if (shelfRenderer == null) return;
-
-        if (!isHighlighted)
+        if (shelfRenderer != null && shelfRenderer.material != null)
         {
-            // Ripristina il materiale originale
-            shelfRenderer.material.color = Color.white;
-            return;
+            if (highlight)
+            {
+                shelfRenderer.material.color = highlightColor;
+            }
+            else
+            {
+                shelfRenderer.material.color = originalColor;
+            }
         }
-
-        // Mostra colore in base alla disponibilità
-        Color targetColor = itemsOnShelf.Count < maxItems ? availableColor : fullColor;
-        shelfRenderer.material.color = targetColor;
     }
 
-    /// <summary>
-    /// Ottiene tutti gli oggetti sullo scaffale
-    /// </summary>
-    public List<ShopItem> GetItems()
+    void OnDrawGizmosSelected()
     {
-        return new List<ShopItem>(itemsOnShelf);
-    }
-
-    /// <summary>
-    /// Controlla se lo scaffale ha spazio
-    /// </summary>
-    public bool HasSpace()
-    {
-        return itemsOnShelf.Count < maxItems;
-    }
-
-    /// <summary>
-    /// Ottiene il numero di oggetti sullo scaffale
-    /// </summary>
-    public int GetItemCount()
-    {
-        return itemsOnShelf.Count;
+        Collider col = GetComponent<Collider>();
+        if (col != null)
+        {
+            Gizmos.color = new Color(0f, 1f, 0f, 0.3f);
+            Bounds bounds = col.bounds;
+            bounds.Expand(new Vector3(0f, 0.2f, 0f));
+            Gizmos.DrawWireCube(bounds.center, bounds.size);
+        }
     }
 }

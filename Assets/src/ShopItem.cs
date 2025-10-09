@@ -1,105 +1,50 @@
 ﻿using UnityEngine;
 
 /// <summary>
-/// Rappresenta un oggetto vendibile nel negozio
+/// Simple shop item that can be grabbed, placed, and priced
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(Collider))]
 public class ShopItem : MonoBehaviour
 {
     [Header("Item Info")]
-    [Tooltip("Nome del prodotto")]
-    public string itemName = "Prodotto";
-    
-    [Tooltip("Codice a barre univoco")]
+    public string itemName = "Product";
     public string barcode = "";
-    
-    [Tooltip("Prezzo base suggerito")]
     public float basePrice = 1.0f;
-    
-    [Tooltip("Categoria del prodotto")]
-    public ItemCategory category = ItemCategory.Food;
-    
-    [Header("Item State")]
-    [Tooltip("Prezzo assegnato dal giocatore (0 = nessun prezzo)")]
     public float assignedPrice = 0f;
-    
-    [Tooltip("È posizionato su uno scaffale?")]
-    public bool isOnShelf = false;
-    
-    [Tooltip("Riferimento allo scaffale su cui è posizionato")]
-    public Shelf currentShelf = null;
+
+    [Header("State")]
+    public bool isBeingHeld = false;
+    public bool isPlaced = false;
 
     private Rigidbody rb;
     private Collider col;
-    private bool isBeingHeld = false;
-    private Transform originalParent;
-
-    public enum ItemCategory
-    {
-        Food,
-        Beverage,
-        Cleaning,
-        Personal,
-        Other
-    }
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
-        originalParent = transform.parent;
         
-        // Genera un barcode casuale se vuoto
         if (string.IsNullOrEmpty(barcode))
         {
-            barcode = GenerateBarcode();
+            barcode = Random.Range(100000000, 999999999).ToString();
+        }
+
+        // Ensure correct setup
+        if (rb != null)
+        {
+            rb.interpolation = RigidbodyInterpolation.Interpolate;
+            rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
         }
     }
 
     /// <summary>
-    /// Genera un codice a barre casuale
+    /// Called when grabbed by player
     /// </summary>
-    string GenerateBarcode()
-    {
-        return Random.Range(100000000, 999999999).ToString();
-    }
-
-    /// <summary>
-    /// Calcola il prezzo suggerito con variazione casuale
-    /// </summary>
-    public float GetSuggestedPrice()
-    {
-        GlobalConfig config = GlobalConfig.Instance;
-        float variation = Random.Range(-config.priceSuggestionVariation, config.priceSuggestionVariation);
-        return basePrice * (1f + variation);
-    }
-
-    /// <summary>
-    /// Assegna un prezzo all'oggetto
-    /// </summary>
-    public void SetPrice(float price)
-    {
-        assignedPrice = price;
-        Debug.Log($"{itemName}: Prezzo impostato a €{price:F2}");
-    }
-
-    /// <summary>
-    /// Controlla se l'oggetto ha un prezzo
-    /// </summary>
-    public bool HasPrice()
-    {
-        return assignedPrice > 0f;
-    }
-
-    /// <summary>
-    /// Rende l'oggetto afferrabile
-    /// </summary>
-    public void OnGrabbed()
+    public void OnGrab()
     {
         isBeingHeld = true;
-        isOnShelf = false;
-        currentShelf = null;
+        isPlaced = false;
         
         if (rb != null)
         {
@@ -109,68 +54,83 @@ public class ShopItem : MonoBehaviour
         
         if (col != null)
         {
-            col.enabled = false; // Disabilita collisioni mentre è tenuto
+            col.isTrigger = true; // Make trigger while held to avoid physics issues
         }
     }
 
     /// <summary>
-    /// Rilascia l'oggetto
+    /// Called when placed by player
     /// </summary>
-    public void OnReleased()
+    public void OnPlace()
     {
         isBeingHeld = false;
+        isPlaced = true;
+        
+        if (rb != null)
+        {
+            // CRITICAL: Stop ALL movement immediately
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            
+            // Make kinematic so physics doesn't affect it
+            rb.isKinematic = true;
+            rb.useGravity = false;
+        }
+        
+        if (col != null)
+        {
+            col.isTrigger = false; // Solid collider so it can be grabbed again
+        }
+
+        // Force transform to stop moving
+        transform.hasChanged = false;
+    }
+
+    /// <summary>
+    /// Called when thrown by player
+    /// </summary>
+    public void OnThrow(Vector3 velocity)
+    {
+        isBeingHeld = false;
+        isPlaced = false;
         
         if (rb != null)
         {
             rb.isKinematic = false;
             rb.useGravity = true;
+            rb.linearVelocity = velocity;
+            rb.angularVelocity = Random.insideUnitSphere * 2f;
         }
         
         if (col != null)
         {
-            col.enabled = true;
+            col.isTrigger = false;
         }
     }
 
     /// <summary>
-    /// Posiziona l'oggetto su uno scaffale
+    /// Get suggested price with variation
     /// </summary>
-    public void PlaceOnShelf(Shelf shelf, Vector3 position)
+    public float GetSuggestedPrice()
     {
-        isOnShelf = true;
-        currentShelf = shelf;
-        transform.position = position;
-        transform.parent = shelf.transform;
-        
-        if (rb != null)
-        {
-            rb.isKinematic = true;
-            rb.useGravity = false;
-        }
-        
-        Debug.Log($"{itemName} posizionato su scaffale");
+        float variation = Random.Range(-0.1f, 0.1f);
+        return basePrice * (1f + variation);
     }
 
     /// <summary>
-    /// Rimuove l'oggetto dallo scaffale
+    /// Set price for this item
     /// </summary>
-    public void RemoveFromShelf()
+    public void SetPrice(float price)
     {
-        if (currentShelf != null)
-        {
-            currentShelf.RemoveItem(this);
-        }
-        
-        isOnShelf = false;
-        currentShelf = null;
-        transform.parent = originalParent;
+        assignedPrice = price;
+        Debug.Log($"{itemName}: Price set to €{price:F2}");
     }
 
     /// <summary>
-    /// Controlla se l'oggetto è attualmente tenuto dal giocatore
+    /// Check if item has a price
     /// </summary>
-    public bool IsBeingHeld()
+    public bool HasPrice()
     {
-        return isBeingHeld;
+        return assignedPrice > 0f;
     }
 }

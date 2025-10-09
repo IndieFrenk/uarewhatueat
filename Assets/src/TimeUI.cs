@@ -83,7 +83,7 @@ public class TimeUI : MonoBehaviour
     {
         if (wakeUpPanel != null && wakeUpMessageText != null)
         {
-            wakeUpMessageText.text = $"Buongiorno!\nOggi è {config.GetDayName()}";
+            wakeUpMessageText.text = $"Good morning!\nToday is {config.GetDayName()}";
             wakeUpPanel.SetActive(true);
             showingWakeUpMessage = true;
             wakeUpMessageTimer = wakeUpMessageDuration;

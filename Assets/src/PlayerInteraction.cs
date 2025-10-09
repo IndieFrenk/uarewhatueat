@@ -1,414 +1,471 @@
 using UnityEngine;
 
 /// <summary>
-/// Gestisce le interazioni del giocatore con oggetti e scaffali
+/// Simple and robust player interaction system for grabbing, placing, and throwing items
 /// </summary>
 public class PlayerInteraction : MonoBehaviour
 {
-    [Header("Interaction Settings")]
-    [Tooltip("Camera del giocatore")]
+    [Header("References")]
     public Camera playerCamera;
-    
-    [Tooltip("Layer degli oggetti afferrabili")]
-    public LayerMask itemLayer;
-    
-    [Tooltip("Layer degli scaffali")]
-    public LayerMask shelfLayer;
-    
-    [Tooltip("Transform dove tenere l'oggetto (mano destra)")]
-    public Transform rightHandTransform;
+    public Transform holdPosition;
 
-    [Header("Throw Settings")]
-    [Tooltip("Forza del lancio")]
-    public float throwForce = 10f;
-    
-    [Tooltip("Forza verso l'alto del lancio")]
-    public float throwUpwardForce = 2f;
-
-    [Header("Input Settings")]
-    [Tooltip("Tasto per afferrare oggetti")]
+    [Header("Interaction Settings")]
+    public float grabDistance = 3f;
+    public float placeDistance = 3f;
     public KeyCode grabKey = KeyCode.E;
-    
-    [Tooltip("Tasto per posizionare oggetti")]
-    public KeyCode placeKey = KeyCode.Mouse0; // Click sinistro
-    
-    [Tooltip("Tasto per lanciare oggetti")]
-    public KeyCode throwKey = KeyCode.Mouse1; // Click destro
-    
-    [Tooltip("Tasto per ruotare oggetti")]
+    public KeyCode placeKey = KeyCode.Mouse0;
+    public KeyCode throwKey = KeyCode.Mouse1;
     public KeyCode rotateKey = KeyCode.R;
-    
-    [Tooltip("Tasto per assegnare prezzo")]
     public KeyCode setPriceKey = KeyCode.P;
 
-    [Header("Preview Settings")]
-    [Tooltip("Materiale per la preview dell'oggetto")]
-    public Material previewMaterial;
-    
-    [Tooltip("Colore preview valida (verde)")]
-    public Color validPreviewColor = new Color(0f, 1f, 0f, 0.5f);
-    
-    [Tooltip("Colore preview invalida (rosso)")]
-    public Color invalidPreviewColor = new Color(1f, 0f, 0f, 0.5f);
+    [Header("Physics")]
+    public float throwForce = 10f;
+    public float throwUpForce = 2f;
+    public float rotationSpeed = 100f;
 
-    private GlobalConfig config;
-    private ShopItem heldItem = null;
-    private Shelf highlightedShelf = null;
-    private GameObject previewObject = null;
-    private bool isHoldingItem = false;
-    private bool canPlaceOnShelf = false;
-    private Vector3 targetPlacementPosition = Vector3.zero;
+    [Header("Preview")]
+    public bool showPreview = true;
+    public Material previewMaterial;
+    public Color validColor = new Color(0f, 1f, 0f, 0.5f);
+    public Color invalidColor = new Color(1f, 0f, 0f, 0.5f);
+
+    [Header("Layers")]
+    public LayerMask itemLayer;
+    public LayerMask placementLayer; // What surfaces can we place on
+
+    [Header("Debug")]
+    public bool debugMode = false;
+
+    // Private
+    private ShopItem heldItem;
+    private GameObject previewObject;
     private float currentRotation = 0f;
+    private bool canPlace = false;
+    private Vector3 targetPlacePosition;
+    private Quaternion targetPlaceRotation;
 
     void Start()
     {
-        config = GlobalConfig.Instance;
-        
         if (playerCamera == null)
-        {
             playerCamera = Camera.main;
+
+        if (holdPosition == null)
+        {
+            GameObject holdPoint = new GameObject("HoldPosition");
+            holdPosition = holdPoint.transform;
+            holdPosition.SetParent(playerCamera.transform);
+            holdPosition.localPosition = new Vector3(0.3f, -0.3f, 0.5f);
         }
 
-        // Crea la mano destra se non esiste
-        if (rightHandTransform == null)
-        {
-            GameObject rightHand = new GameObject("RightHand");
-            rightHandTransform = rightHand.transform;
-            rightHandTransform.SetParent(playerCamera.transform);
-            rightHandTransform.localPosition = new Vector3(0.3f, -0.3f, 0.5f);
-            rightHandTransform.localRotation = Quaternion.Euler(0f, -15f, 0f);
-        }
-
-        // Crea materiale preview se non esiste
-        if (previewMaterial == null)
-        {
-            previewMaterial = new Material(Shader.Find("Standard"));
-            previewMaterial.SetFloat("_Mode", 3); // Transparent mode
-            previewMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            previewMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-            previewMaterial.SetInt("_ZWrite", 0);
-            previewMaterial.DisableKeyword("_ALPHATEST_ON");
-            previewMaterial.EnableKeyword("_ALPHABLEND_ON");
-            previewMaterial.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-            previewMaterial.renderQueue = 3000;
-        }
+        // Setup layers if not set
+        if (itemLayer == 0)
+            itemLayer = LayerMask.GetMask("ShopItem");
+        
+        if (placementLayer == 0)
+            placementLayer = ~0; // Everything
     }
 
     void Update()
     {
-        if (isHoldingItem)
+        // Handle input first
+        HandleInput();
+
+        // Then update state based on what we're holding
+        if (heldItem != null && heldItem.isBeingHeld)
         {
             HandleHeldItem();
         }
-        else
+        else if (heldItem == null)
         {
-            CheckForInteractables();
+            CheckForGrabbableItems();
         }
-
-        HandleInput();
     }
 
     /// <summary>
-    /// Controlla oggetti afferrabili davanti al giocatore
+    /// Check for items in front of player
     /// </summary>
-    void CheckForInteractables()
+    void CheckForGrabbableItems()
     {
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, config.grabDistance, itemLayer))
+        if (Physics.Raycast(ray, out hit, grabDistance))
         {
             ShopItem item = hit.collider.GetComponent<ShopItem>();
-            if (item != null && !item.IsBeingHeld())
+            if (item != null && !item.isBeingHeld)
             {
-                Debug.DrawRay(ray.origin, ray.direction * config.grabDistance, Color.green);
+                if (debugMode)
+                    Debug.DrawRay(ray.origin, ray.direction * grabDistance, Color.green);
             }
         }
     }
 
     /// <summary>
-    /// Gestisce l'oggetto tenuto in mano
+    /// Handle item currently held
     /// </summary>
     void HandleHeldItem()
     {
         if (heldItem == null) return;
 
-        // Mantieni l'oggetto nella mano destra
-        heldItem.transform.position = rightHandTransform.position;
-        heldItem.transform.rotation = rightHandTransform.rotation * Quaternion.Euler(0f, currentRotation, 0f);
+        // CRITICAL: Only move item if it's actually being held (not just placed)
+        if (!heldItem.isBeingHeld)
+        {
+            // Item was placed, don't move it
+            return;
+        }
 
-        // Cerca scaffali per il posizionamento e mostra preview
-        CheckShelfPlacement();
+        // Keep item at hold position
+        heldItem.transform.position = holdPosition.position;
+        heldItem.transform.rotation = holdPosition.rotation * Quaternion.Euler(0f, currentRotation, 0f);
+
+        // Check where we can place
+        CheckPlacement();
     }
 
     /// <summary>
-    /// Controlla il posizionamento sullo scaffale e mostra preview
+    /// Check valid placement position
     /// </summary>
-    void CheckShelfPlacement()
+    void CheckPlacement()
     {
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
         RaycastHit hit;
 
-        // Rimuovi evidenziazione precedente
-        if (highlightedShelf != null)
+        if (Physics.Raycast(ray, out hit, placeDistance, placementLayer))
         {
-            highlightedShelf.Highlight(false);
-            highlightedShelf = null;
-        }
-
-        canPlaceOnShelf = false;
-
-        if (Physics.Raycast(ray, out hit, config.shelfPlacementDistance, shelfLayer))
-        {
-            Shelf shelf = hit.collider.GetComponent<Shelf>();
-            if (shelf != null && shelf.HasSpace())
+            // Found a surface to place on
+            targetPlacePosition = hit.point + hit.normal * 0.05f; // Slightly above surface
+            targetPlaceRotation = Quaternion.FromToRotation(Vector3.up, hit.normal) * Quaternion.Euler(0f, currentRotation, 0f);
+            
+            // Check if position is valid (not overlapping other objects)
+            canPlace = IsPositionValid(targetPlacePosition);
+            
+            if (showPreview)
             {
-                highlightedShelf = shelf;
-                highlightedShelf.Highlight(true);
-
-                // Ottieni la posizione dello slot più vicino
-                bool hasSlot;
-                targetPlacementPosition = shelf.GetNearestAvailableSlot(hit.point, out hasSlot);
-
-                if (hasSlot)
-                {
-                    canPlaceOnShelf = true;
-                    ShowPreview(targetPlacementPosition, true);
-                }
-                else
-                {
-                    ShowPreview(hit.point, false);
-                }
+                ShowPreview(targetPlacePosition, targetPlaceRotation, canPlace);
             }
-            else
+
+            if (debugMode && canPlace)
             {
-                HidePreview();
+                Debug.DrawLine(playerCamera.transform.position, targetPlacePosition, Color.green);
             }
         }
         else
         {
+            canPlace = false;
             HidePreview();
         }
     }
 
     /// <summary>
-    /// Mostra la preview dell'oggetto sullo scaffale
+    /// Check if placement position is valid
     /// </summary>
-    void ShowPreview(Vector3 position, bool isValid)
+    bool IsPositionValid(Vector3 position)
     {
-        if (heldItem == null) return;
-
-        // Crea preview se non esiste
-        if (previewObject == null)
+        // Check for overlapping items
+        Collider[] overlaps = Physics.OverlapSphere(position, 0.2f, itemLayer);
+        
+        foreach (Collider col in overlaps)
         {
-            previewObject = new GameObject("PreviewObject");
-            
-            // Copia tutti i MeshFilter e MeshRenderer dall'oggetto originale
-            MeshFilter[] originalMeshes = heldItem.GetComponentsInChildren<MeshFilter>();
-            foreach (MeshFilter originalMesh in originalMeshes)
+            ShopItem otherItem = col.GetComponent<ShopItem>();
+            if (otherItem != null && otherItem != heldItem && otherItem.isPlaced)
             {
-                GameObject previewPart = new GameObject(originalMesh.name);
-                previewPart.transform.SetParent(previewObject.transform);
-                previewPart.transform.localPosition = originalMesh.transform.localPosition;
-                previewPart.transform.localRotation = originalMesh.transform.localRotation;
-                previewPart.transform.localScale = originalMesh.transform.localScale;
-
-                MeshFilter mf = previewPart.AddComponent<MeshFilter>();
-                mf.mesh = originalMesh.sharedMesh;
-
-                MeshRenderer mr = previewPart.AddComponent<MeshRenderer>();
-                Material[] materials = new Material[originalMesh.GetComponent<MeshRenderer>().sharedMaterials.Length];
-                for (int i = 0; i < materials.Length; i++)
-                {
-                    materials[i] = new Material(previewMaterial);
-                }
-                mr.materials = materials;
+                return false; // Too close to another placed item
             }
         }
-
-        // Posiziona la preview
-        previewObject.transform.position = position;
-        previewObject.transform.rotation = Quaternion.Euler(0f, currentRotation, 0f);
-        previewObject.SetActive(true);
-
-        // Colora la preview in base alla validità
-        Color previewColor = isValid ? validPreviewColor : invalidPreviewColor;
-        MeshRenderer[] renderers = previewObject.GetComponentsInChildren<MeshRenderer>();
-        foreach (MeshRenderer renderer in renderers)
-        {
-            foreach (Material mat in renderer.materials)
-            {
-                mat.color = previewColor;
-            }
-        }
+        
+        return true;
     }
 
     /// <summary>
-    /// Nasconde la preview
-    /// </summary>
-    void HidePreview()
-    {
-        if (previewObject != null)
-        {
-            previewObject.SetActive(false);
-        }
-    }
-
-    /// <summary>
-    /// Gestisce l'input del giocatore
+    /// Handle player input
     /// </summary>
     void HandleInput()
     {
-        // Afferrare oggetto (E)
-        if (Input.GetKeyDown(grabKey) && !isHoldingItem)
+        // Grab
+        if (Input.GetKeyDown(grabKey))
         {
-            TryGrabItem();
+            if (heldItem == null)
+                TryGrabItem();
         }
 
-        // Posizionare oggetto (Click Sinistro)
-        if (Input.GetKeyDown(placeKey) && isHoldingItem)
+        // Place
+        if (Input.GetKeyDown(placeKey) && heldItem != null)
         {
-            PlaceItem();
+            if (canPlace)
+                PlaceItem();
         }
 
-        // Lanciare oggetto (Click Destro)
-        if (Input.GetKeyDown(throwKey) && isHoldingItem)
+        // Throw
+        if (Input.GetKeyDown(throwKey) && heldItem != null)
         {
             ThrowItem();
         }
 
-        // Ruotare oggetto (R)
-        if (Input.GetKey(rotateKey) && isHoldingItem)
+        // Rotate
+        if (Input.GetKey(rotateKey) && heldItem != null)
         {
-            currentRotation += config.objectRotationSpeed * Time.deltaTime;
+            currentRotation += rotationSpeed * Time.deltaTime;
         }
 
-        // Assegnare prezzo (P)
-        if (Input.GetKeyDown(setPriceKey) && isHoldingItem)
+        // Set price
+        if (Input.GetKeyDown(setPriceKey) && heldItem != null)
         {
-            OpenPriceMenu();
+            float suggestedPrice = heldItem.GetSuggestedPrice();
+            PriceUI.ShowPriceMenu?.Invoke(heldItem, suggestedPrice);
         }
     }
 
     /// <summary>
-    /// Tenta di afferrare un oggetto
+    /// Try to grab an item
     /// </summary>
     void TryGrabItem()
     {
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
-        RaycastHit hit;
+        RaycastHit[] hits = Physics.RaycastAll(ray, grabDistance);
 
-        if (Physics.Raycast(ray, out hit, config.grabDistance, itemLayer))
+        // Sort by distance
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+        foreach (RaycastHit hit in hits)
         {
             ShopItem item = hit.collider.GetComponent<ShopItem>();
             
-            if (item != null && !item.IsBeingHeld())
+            if (item != null && !item.isBeingHeld)
             {
                 GrabItem(item);
+                return;
             }
         }
+
+        if (debugMode)
+            Debug.Log("No item found to grab");
     }
 
     /// <summary>
-    /// Afferra un oggetto
+    /// Grab an item
     /// </summary>
     void GrabItem(ShopItem item)
     {
         heldItem = item;
-        isHoldingItem = true;
         currentRotation = 0f;
         
-        // Rimuovi dallo scaffale se era posizionato
-        if (item.isOnShelf)
-        {
-            item.RemoveFromShelf();
-        }
-        
-        item.OnGrabbed();
-        item.transform.SetParent(rightHandTransform);
+        item.transform.SetParent(holdPosition);
         item.transform.localPosition = Vector3.zero;
         item.transform.localRotation = Quaternion.identity;
         
-        Debug.Log($"Afferrato: {item.itemName}");
+        item.OnGrab();
+
+        if (debugMode)
+            Debug.Log($"Grabbed: {item.itemName}");
     }
 
     /// <summary>
-    /// Posiziona l'oggetto
+    /// Place the held item
     /// </summary>
     void PlaceItem()
     {
-        if (heldItem == null) return;
+        if (heldItem == null || !canPlace) return;
 
-        // Controlla se c'è uno scaffale valido
-        if (canPlaceOnShelf && highlightedShelf != null)
+        // Store references
+        ShopItem itemToPlace = heldItem;
+        Vector3 placePos = targetPlacePosition;
+        Quaternion placeRot = targetPlaceRotation;
+
+        if (debugMode)
         {
-            // Posiziona sullo scaffale
-            heldItem.transform.SetParent(null);
-            highlightedShelf.AddItem(heldItem, targetPlacementPosition);
-            highlightedShelf.Highlight(false);
-            
-            Debug.Log($"Posizionato {heldItem.itemName} su scaffale");
-        }
-        else
-        {
-            // Posiziona a terra davanti al giocatore
-            heldItem.transform.SetParent(null);
-            
-            Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
-            RaycastHit hit;
-            
-            if (Physics.Raycast(ray, out hit, 3f))
-            {
-                heldItem.transform.position = hit.point + Vector3.up * 0.1f;
-            }
-            else
-            {
-                heldItem.transform.position = playerCamera.transform.position + playerCamera.transform.forward * 2f;
-            }
-            
-            heldItem.OnReleased();
-            Debug.Log($"Posizionato {heldItem.itemName} a terra");
+            Debug.Log($"=== PLACING ITEM ===");
+            Debug.Log($"Item: {itemToPlace.itemName}");
+            Debug.Log($"Current position: {itemToPlace.transform.position}");
+            Debug.Log($"Target position: {placePos}");
+            Debug.Log($"Target rotation: {placeRot.eulerAngles}");
         }
 
-        // Reset stato
+        // STEP 1: Clear held item FIRST so Update() doesn't move it
+        heldItem = null;
+
+        // STEP 2: Remove from parent immediately
+        itemToPlace.transform.SetParent(null);
+
+        // STEP 3: Force position and rotation to target
+        itemToPlace.transform.position = placePos;
+        itemToPlace.transform.rotation = placeRot;
+        
+        // STEP 4: Call OnPlace to set physics state
+        itemToPlace.OnPlace();
+
+        // STEP 5: Force position again after OnPlace (in case physics moved it)
+        itemToPlace.transform.position = placePos;
+        itemToPlace.transform.rotation = placeRot;
+
+        // STEP 6: Use coroutine to force position in next frame as safety measure
+        StartCoroutine(EnsurePlacementPosition(itemToPlace, placePos, placeRot));
+
+        if (debugMode)
+        {
+            Debug.Log($"Final position: {itemToPlace.transform.position}");
+            Debug.Log($"===================");
+        }
+
+        // Cleanup
         HidePreview();
         DestroyPreview();
-        heldItem = null;
-        isHoldingItem = false;
-        canPlaceOnShelf = false;
+        canPlace = false;
+        currentRotation = 0f;
     }
 
     /// <summary>
-    /// Lancia l'oggetto
+    /// Ensures item stays at placement position for a few frames
+    /// </summary>
+    System.Collections.IEnumerator EnsurePlacementPosition(ShopItem item, Vector3 targetPos, Quaternion targetRot)
+    {
+        // Wait for end of frame
+        yield return new WaitForEndOfFrame();
+
+        // Force position for 3 frames to be absolutely sure
+        for (int i = 0; i < 3; i++)
+        {
+            if (item != null && item.isPlaced)
+            {
+                item.transform.position = targetPos;
+                item.transform.rotation = targetRot;
+
+                if (debugMode && i == 0)
+                {
+                    Debug.Log($"[Frame {i}] Enforced position: {item.transform.position}");
+                }
+            }
+            yield return null;
+        }
+
+        if (debugMode)
+        {
+            Debug.Log($"Placement secured at: {item.transform.position}");
+        }
+    }
+
+    /// <summary>
+    /// Throw the held item
     /// </summary>
     void ThrowItem()
     {
         if (heldItem == null) return;
 
         heldItem.transform.SetParent(null);
-        heldItem.OnReleased();
+        
+        Vector3 throwDirection = playerCamera.transform.forward;
+        Vector3 throwVelocity = throwDirection * throwForce + Vector3.up * throwUpForce;
+        
+        heldItem.OnThrow(throwVelocity);
 
-        Rigidbody rb = heldItem.GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            Vector3 throwDirection = playerCamera.transform.forward;
-            Vector3 throwVelocity = throwDirection * throwForce + Vector3.up * throwUpwardForce;
-            rb.linearVelocity = throwVelocity;
-            rb.angularVelocity = Random.insideUnitSphere * 2f;
-        }
+        if (debugMode)
+            Debug.Log($"Threw: {heldItem.itemName}");
 
-        Debug.Log($"Lanciato: {heldItem.itemName}");
-
-        // Reset stato
-        HidePreview();
-        DestroyPreview();
-        heldItem = null;
-        isHoldingItem = false;
-        canPlaceOnShelf = false;
+        CleanupAfterRelease();
     }
 
     /// <summary>
-    /// Distrugge l'oggetto preview
+    /// Cleanup after releasing item
+    /// </summary>
+    void CleanupAfterRelease()
+    {
+        HidePreview();
+        DestroyPreview();
+        heldItem = null;
+        canPlace = false;
+        currentRotation = 0f;
+    }
+
+    /// <summary>
+    /// Show placement preview
+    /// </summary>
+    void ShowPreview(Vector3 position, Quaternion rotation, bool isValid)
+    {
+        if (heldItem == null) return;
+
+        // Create preview if needed
+        if (previewObject == null)
+        {
+            CreatePreviewObject();
+        }
+
+        if (previewObject != null)
+        {
+            previewObject.SetActive(true);
+            previewObject.transform.position = position;
+            previewObject.transform.rotation = rotation;
+
+            // Update color
+            Color color = isValid ? validColor : invalidColor;
+            Renderer[] renderers = previewObject.GetComponentsInChildren<Renderer>();
+            foreach (Renderer r in renderers)
+            {
+                foreach (Material mat in r.materials)
+                {
+                    mat.color = color;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Hide preview
+    /// </summary>
+    void HidePreview()
+    {
+        if (previewObject != null)
+            previewObject.SetActive(false);
+    }
+
+    /// <summary>
+    /// Create preview object
+    /// </summary>
+    void CreatePreviewObject()
+    {
+        if (heldItem == null) return;
+
+        previewObject = new GameObject("Preview");
+
+        // Create material if needed
+        if (previewMaterial == null)
+        {
+            previewMaterial = new Material(Shader.Find("Standard"));
+            previewMaterial.SetFloat("_Mode", 3);
+            previewMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            previewMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            previewMaterial.SetInt("_ZWrite", 0);
+            previewMaterial.EnableKeyword("_ALPHABLEND_ON");
+            previewMaterial.renderQueue = 3000;
+        }
+
+        // Copy mesh structure
+        MeshFilter[] meshes = heldItem.GetComponentsInChildren<MeshFilter>();
+        foreach (MeshFilter mf in meshes)
+        {
+            if (mf.sharedMesh == null) continue;
+
+            GameObject part = new GameObject(mf.name);
+            part.transform.SetParent(previewObject.transform);
+            part.transform.localPosition = mf.transform.localPosition;
+            part.transform.localRotation = mf.transform.localRotation;
+            part.transform.localScale = mf.transform.localScale;
+
+            MeshFilter newMf = part.AddComponent<MeshFilter>();
+            newMf.sharedMesh = mf.sharedMesh;
+
+            MeshRenderer newMr = part.AddComponent<MeshRenderer>();
+            Material[] mats = new Material[mf.GetComponent<MeshRenderer>().sharedMaterials.Length];
+            for (int i = 0; i < mats.Length; i++)
+            {
+                mats[i] = new Material(previewMaterial);
+            }
+            newMr.materials = mats;
+        }
+
+        previewObject.SetActive(false);
+    }
+
+    /// <summary>
+    /// Destroy preview object
     /// </summary>
     void DestroyPreview()
     {
@@ -420,21 +477,15 @@ public class PlayerInteraction : MonoBehaviour
     }
 
     /// <summary>
-    /// Apre il menu per assegnare il prezzo
+    /// Check if holding an item
     /// </summary>
-    void OpenPriceMenu()
+    public bool IsHoldingItem()
     {
-        if (heldItem == null) return;
-
-        float suggestedPrice = heldItem.GetSuggestedPrice();
-        Debug.Log($"Prezzo suggerito per {heldItem.itemName}: €{suggestedPrice:F2}");
-        
-        // Invia evento per aprire UI prezzo
-        PriceUI.ShowPriceMenu?.Invoke(heldItem, suggestedPrice);
+        return heldItem != null;
     }
 
     /// <summary>
-    /// Ottiene l'oggetto attualmente tenuto
+    /// Get held item
     /// </summary>
     public ShopItem GetHeldItem()
     {
@@ -442,18 +493,20 @@ public class PlayerInteraction : MonoBehaviour
     }
 
     /// <summary>
-    /// Controlla se il giocatore sta tenendo un oggetto
+    /// Can place at current position
     /// </summary>
-    public bool IsHoldingItem()
+    public bool CanPlace()
     {
-        return isHoldingItem;
+        return canPlace;
     }
 
-    /// <summary>
-    /// Controlla se può posizionare sullo scaffale
-    /// </summary>
-    public bool CanPlaceOnShelf()
+    void OnDrawGizmos()
     {
-        return canPlaceOnShelf;
+        if (!debugMode || playerCamera == null) return;
+
+        // Draw grab range
+        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawLine(ray.origin, ray.origin + ray.direction * grabDistance);
     }
 }

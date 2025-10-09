@@ -2,35 +2,21 @@
 using TMPro;
 
 /// <summary>
-/// Mostra prompt di interazione quando il giocatore può interagire con oggetti
+/// Shows interaction prompts for player
 /// </summary>
 public class InteractionPromptUI : MonoBehaviour
 {
     [Header("UI References")]
-    [Tooltip("Panel del prompt")]
     public GameObject promptPanel;
-    
-    [Tooltip("Text del prompt")]
     public TextMeshProUGUI promptText;
-    
+
     [Header("Prompt Messages")]
-    [Tooltip("Messaggio per afferrare oggetti")]
-    public string grabPrompt = "[E] Afferra";
-    
-    [Tooltip("Messaggio per posizionare su scaffale")]
-    public string placeOnShelfPrompt = "[Click Sinistro] Posiziona su scaffale";
-    
-    [Tooltip("Messaggio per posizionare a terra")]
-    public string placePrompt = "[Click Sinistro] Posiziona";
-    
-    [Tooltip("Messaggio per lanciare")]
-    public string throwPrompt = "[Click Destro] Lancia";
-    
-    [Tooltip("Messaggio per ruotare")]
-    public string rotatePrompt = "[R] Ruota";
-    
-    [Tooltip("Messaggio per assegnare prezzo")]
-    public string setPricePrompt = "[P] Imposta prezzo";
+    public string grabPrompt = "[E] Grab";
+    public string placePrompt = "[Left Click] Place";
+    public string placeInvalidPrompt = "[Left Click] Place (find valid surface)";
+    public string throwPrompt = "[Right Click] Throw";
+    public string rotatePrompt = "[R] Rotate";
+    public string setPricePrompt = "[P] Set Price";
 
     private PlayerInteraction playerInteraction;
     private Camera playerCamera;
@@ -39,55 +25,39 @@ public class InteractionPromptUI : MonoBehaviour
     {
         playerInteraction = FindObjectOfType<PlayerInteraction>();
         playerCamera = Camera.main;
-        
+
         if (promptPanel != null)
-        {
             promptPanel.SetActive(false);
-        }
     }
 
     void Update()
     {
-        UpdatePrompt();
-    }
-
-    /// <summary>
-    /// Aggiorna il prompt in base al contesto
-    /// </summary>
-    void UpdatePrompt()
-    {
         if (playerInteraction == null) return;
 
-        GlobalConfig config = GlobalConfig.Instance;
-        bool isHolding = playerInteraction.IsHoldingItem();
-
-        if (isHolding)
+        if (playerInteraction.IsHoldingItem())
         {
-            // Sta tenendo un oggetto
             ShowHoldingPrompts();
         }
         else
         {
-            // Non sta tenendo niente, controlla se può afferrare qualcosa
-            CheckForGrabbableItems(config);
+            ShowGrabPrompt();
         }
     }
 
     /// <summary>
-    /// Mostra i prompt quando si tiene un oggetto
+    /// Show prompts when holding item
     /// </summary>
     void ShowHoldingPrompts()
     {
         string message = "";
         
-        // Controlla se può posizionare sullo scaffale
-        if (playerInteraction.CanPlaceOnShelf())
+        if (playerInteraction.CanPlace())
         {
-            message = placeOnShelfPrompt;
+            message = placePrompt;
         }
         else
         {
-            message = placePrompt;
+            message = placeInvalidPrompt;
         }
 
         message += $"\n{throwPrompt}";
@@ -98,30 +68,31 @@ public class InteractionPromptUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Controlla se ci sono oggetti afferrabili
+    /// Show grab prompt when looking at item
     /// </summary>
-    void CheckForGrabbableItems(GlobalConfig config)
+    void ShowGrabPrompt()
     {
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, config.grabDistance))
+        if (Physics.Raycast(ray, out hit, playerInteraction.grabDistance))
         {
             ShopItem item = hit.collider.GetComponent<ShopItem>();
-            if (item != null && !item.IsBeingHeld())
+            
+            if (item != null && !item.isBeingHeld)
             {
                 string message = grabPrompt;
+                message += $"\n{item.itemName}";
                 
-                // Aggiungi info sul prezzo se presente
                 if (item.HasPrice())
                 {
-                    message += $"\n{item.itemName} - €{item.assignedPrice:F2}";
+                    message += $" - €{item.assignedPrice:F2}";
                 }
                 else
                 {
-                    message += $"\n{item.itemName} - Nessun prezzo";
+                    message += " - No price";
                 }
-                
+
                 ShowPrompt(message);
                 return;
             }
@@ -131,29 +102,23 @@ public class InteractionPromptUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Mostra il prompt con un messaggio
+    /// Show prompt
     /// </summary>
     void ShowPrompt(string message)
     {
         if (promptPanel != null)
-        {
             promptPanel.SetActive(true);
-        }
 
         if (promptText != null)
-        {
             promptText.text = message;
-        }
     }
 
     /// <summary>
-    /// Nasconde il prompt
+    /// Hide prompt
     /// </summary>
     void HidePrompt()
     {
         if (promptPanel != null)
-        {
             promptPanel.SetActive(false);
-        }
     }
 }
