@@ -24,6 +24,12 @@ Stato al 16/11/2026. Legenda: [x] fatto, [~] fatto in parte, [ ] da fare.
     - [ ] Confermare quali edifici sono negozio, macelleria, osteria e negozio di piante (oggi scelti per vicinanza al centro).
     - [ ] Rifinire: tetti diversi per forma, balconi, muri a secco, vegetazione varia (castagni, ulivi), illuminazione notturna del paese.
     - [ ] Rilievo più fitto vicino al centro (oggi circa 15 m) e strade che seguono il terreno con scarpate.
+- [x] v4: negozio con spazio per muoversi dietro il banco e la cassa e una parte di magazzino.
+  - [x] Negozio largo 6 m (era 5): corridoio di 1 m dietro banco affettati e cassa, passaggio di 80 cm tra i due, porta del magazzino in fondo al corridoio.
+  - [x] Magazzino 6 x 3,5 m: scaffali metallici con scatole, bancali con carico, sacchi, congelatore, carrello a mano, scrivania con registro, serranda per le consegne.
+  - [x] Visore: camminata in prima persona (W A S D, frecce a schermo) con collisioni. `obj_v4/negozio_layout.json` elenca posizioni e ingombri per ricostruire il negozio in Unity.
+  - [ ] Magazzino completo (cella frigorifera, zona carico e scarico) e scale verso un eventuale piano superiore.
+  - [ ] Porte e passaggi interattivi: flap del banco, porta del magazzino apribile.
 - [ ] Texture dipinte a mano al posto di quelle procedurali.
 - [ ] Rielaborare i modelli per renderli meno «cozy» (usura, luci fredde, asimmetrie).
 - [ ] Altri luoghi: cabina telefonica, ufficio postale, scuola, cimitero, funivia dismessa.

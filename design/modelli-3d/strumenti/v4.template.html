@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Modelli 3D di prova · v4 · negozio con magazzino</title>
+<style>
+:root{--bg:#0d1014;--pan:#161b21;--bor:#2a323b;--tx:#d6dbe0;--dim:#8b95a0;--acc:#ffb347}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,sans-serif}
+header{padding:14px 14px 6px}
+h1{margin:0;font-size:19px;letter-spacing:.02em}
+header p{margin:4px 0 0;color:var(--dim);font-size:13px}
+#vista{position:relative;margin:8px 10px;height:clamp(300px,64vw,620px);border:1px solid var(--bor);border-radius:8px;overflow:hidden;background:#000;touch-action:none}
+canvas{width:100%;height:100%;display:block;touch-action:none}
+canvas.ps1{image-rendering:pixelated}
+#etichette{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+#etichette span{position:absolute;transform:translate(-50%,-100%);white-space:nowrap;font-size:11px;padding:2px 6px;border-radius:3px;background:rgba(10,12,15,.78);border:1px solid rgba(255,179,71,.5);color:#ffd9a0}
+.vig,.grana{position:absolute;inset:0;pointer-events:none;transition:opacity .3s}
+.vig{background:radial-gradient(ellipse at center,transparent 50%,rgba(0,0,0,.7) 100%)}
+.grana{opacity:.14;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.cozy .vig,.cozy .grana{opacity:0}
+#pad{position:absolute;left:10px;bottom:10px;display:none;grid-template-columns:repeat(4,44px);gap:6px;touch-action:none}
+#pad.on{display:grid}
+#pad button{padding:0;height:44px;font-size:18px;background:rgba(10,12,15,.7)}
+#msg{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:20px;color:#fff;background:rgba(0,0,0,.6)}
+.controlli{padding:4px 10px;display:grid;gap:8px}
+.gruppo{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.gruppo>b{font-size:12px;color:var(--dim);min-width:54px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+button{font:inherit;font-size:14px;padding:7px 12px;color:var(--tx);background:var(--pan);border:1px solid var(--bor);border-radius:6px;cursor:pointer}
+button.on{background:#2b2217;border-color:var(--acc);color:var(--acc)}
+button:disabled{opacity:.35;cursor:default}
+section.testo{margin:12px 10px;padding:12px 14px;background:var(--pan);border:1px solid var(--bor);border-radius:8px}
+section.testo h2{margin:0 0 6px;font-size:15px}
+section.testo ul{margin:6px 0 0;padding-left:18px}
+section.testo li{margin:3px 0;color:#c4cbd2}
+#tex{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin-top:8px}
+#tex figure{margin:0;text-align:center;font-size:11px;color:var(--dim)}
+#tex canvas{width:100%;height:auto;aspect-ratio:1;border-radius:4px;border:1px solid var(--bor)}
+.file{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:4px 14px;margin-top:6px;font-size:13px}
+.file a{color:#9cc9ff;text-decoration:none}.file span{color:var(--dim)}
+footer{padding:4px 14px 24px;color:var(--dim);font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Modelli 3D di prova · v4 · negozio con magazzino</h1>
+  <p>Scegli «Negozio e magazzino», poi «Dentro»: ti muovi con W A S D o con le frecce a schermo e vai dietro il banco e la cassa. Trascina per guardarti intorno. Canolo Nuovo è nella scena «Canolo Nuovo».</p>
+</header>
+
+<div id="vista">
+  <canvas id="c"></canvas>
+  <div id="etichette"></div>
+  <div class="vig"></div><div class="grana"></div>
+  <div id="msg">Genero le texture…</div>
+  <div id="pad"><button data-m="av">▲</button><button data-m="si">◀</button><button data-m="in">▼</button><button data-m="de">▶</button></div>
+</div>
+
+<div class="controlli">
+  <div class="gruppo"><b>Scena</b><span id="g-scena" class="gruppo"></span></div>
+  <div class="gruppo"><b>Vista</b>
+    <button data-vista="orbita" class="on">Esterna</button>
+    <button data-vista="fps" id="b-fps">Dentro (prima persona)</button></div>
+  <div class="gruppo"><b>Luce</b>
+    <button data-luce="giorno" class="on">Giorno</button><button data-luce="sera">Sera</button><button data-luce="notte">Notte</button></div>
+  <div class="gruppo"><b>Look</b>
+    <button data-look="cozy">Cozy</button><button data-look="inquieto" class="on">Inquieto</button>
+    <button data-opz="tex" class="on">Texture</button><button data-opz="ps1">Stile PS1</button>
+    <button data-opz="marchio" class="on">Marchio</button><button data-opz="etichette" class="on">Etichette</button></div>
+  <div class="gruppo"><b>File</b><button id="b-obj">Scarica questa scena (.obj)</button></div>
+</div>
+
+<section class="testo">
+  <h2>Cosa c'è di nuovo nella v4</h2>
+  <ul>
+    <li><b>Spazio dietro il banco e la cassa:</b> il negozio ora è largo 6 m (era 5). Dietro il banco affettati e la cassa corre un corridoio di 1 m. Tra cassa e banco c'è un passaggio di 80 cm. Il personale può andare dal fronte al fondo.</li>
+    <li><b>Magazzino:</b> una parte, 6 x 3,5 m, dietro il negozio. Porta in fondo al corridoio, scaffali metallici con scatole, bancali con carico, sacchi, congelatore a pozzetto, carrello a mano, scrivania con registro e lampada, serranda per le consegne.</li>
+    <li><b>Movimento:</b> in prima persona si cammina con collisioni contro scaffali, banchi, bancali e pareti.</li>
+    <li><b>Il resto</b> (Canolo Nuovo, banco affettati, prodotti) è come nella v3.</li>
+  </ul>
+  <p style="color:var(--dim);font-size:12px;margin:8px 0 0">Dati della mappa: © OpenStreetMap contributors (ODbL). Quote del terreno: EU-DEM 25 m.</p>
+  <div id="tex"></div>
+</section>
+
+<section class="testo">
+  <h2>File inclusi (cartella <code>obj_v4/</code>: solo i modelli nuovi o cambiati; gli altri sono in <code>obj_v3/</code>)</h2>
+  <div class="file" id="elenco"></div>
+  <ul><li>Formato .obj + .mtl con coordinate UV, che puntano alle texture in <code>obj_v4/texture/</code>. 1 unità = 1 metro, asse Y verso l'alto, i modelli guardano verso +Z. Le texture si ripetono: nel gioco vanno impostate in modalità «Repeat».</li></ul>
+  <div class="gruppo" style="margin-top:8px"><button id="b-tex">Scarica le texture (PNG)</button></div>
+</section>
+<footer>Generato da <code>strumenti/genera_v4.py</code>. Nessuna libreria esterna. © OpenStreetMap contributors.</footer>
+
+<script type="application/json" id="dati">
+__DATI__
+</script>
+<script>
+const DATI = JSON.parse(document.getElementById('dati').textContent);
+(function () {
+const $ = s => document.querySelector(s);
+const cv = $('#c'), vista = $('#vista');
+const gl = cv.getContext('webgl2', {antialias: false, alpha: false});
+if (!gl) { const m = $('#msg'); m.style.display = 'flex'; m.textContent = 'Serve WebGL 2: questo dispositivo non lo supporta.'; return; }
+
+/* ---------- matematica ---------- */
+const sub = (a, b) => [a[0]-b[0], a[1]-b[1], a[2]-b[2]];
+const cross = (a, b) => [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
+const dot = (a, b) => a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const norm = a => { const l = Math.hypot(a[0], a[1], a[2]); return l < 1e-12 ? [0,0,0] : [a[0]/l, a[1]/l, a[2]/l]; };
+const persp = (f, a, n, fa) => { const t = 1/Math.tan(f/2), nf = 1/(n-fa); return [t/a,0,0,0, 0,t,0,0, 0,0,(fa+n)*nf,-1, 0,0,2*fa*n*nf,0]; };
+const look = (e, c) => { const z = norm(sub(e, c)), x = norm(cross([0,1,0], z)), y = cross(z, x);
+  return [x[0],y[0],z[0],0, x[1],y[1],z[1],0, x[2],y[2],z[2],0, -dot(x,e),-dot(y,e),-dot(z,e),1]; };
+const mul = (a, b) => { const o = new Array(16); for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) { let s = 0; for (let k = 0; k < 4; k++) s += a[k*4+r]*b[c*4+k]; o[c*4+r] = s; } return o; };
+const hex = h => [parseInt(h.slice(1,3),16)/255, parseInt(h.slice(3,5),16)/255, parseInt(h.slice(5,7),16)/255];
+const RAD = Math.PI/180, TAU = Math.PI*2;
+
+/* ---------- texture procedurali, tileabili: ogni texture è un moltiplicatore di colore (media ~1) + altezza ---------- */
+const TS = 256;
+function hsh(x, y, s) { let n = Math.imul(x|0, 374761393) + Math.imul(y|0, 668265263) + Math.imul(s|0, 1274126177); n = Math.imul(n ^ (n >>> 13), 1274126177); return ((n ^ (n >>> 16)) >>> 0) / 4294967295; }
+function vn2(u, v, pu, pv, s) { const x = u*pu, y = v*pv, xi = Math.floor(x), yi = Math.floor(y), fx = x-xi, fy = y-yi;
+  const sx = fx*fx*(3-2*fx), sy = fy*fy*(3-2*fy), m = (a, p) => ((a % p) + p) % p;
+  const a = hsh(m(xi,pu), m(yi,pv), s), b = hsh(m(xi+1,pu), m(yi,pv), s), c = hsh(m(xi,pu), m(yi+1,pv), s), d = hsh(m(xi+1,pu), m(yi+1,pv), s);
+  return a + (b-a)*sx + (c-a)*sy + (a-b-c+d)*sx*sy; }
+function fbm(u, v, p, o, s) { let a = .5, t = 0, n = 0; for (let i = 0; i < o; i++) { t += a*vn2(u, v, p << i, p << i, s + i*7); n += a; a *= .5; } return t / n; }
+function wor(u, v, P, s) { const x = u*P, y = v*P, xi = Math.floor(x), yi = Math.floor(y); let d1 = 9, d2 = 9, id = 0;
+  for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) { const cx = xi+i, cy = yi+j, wx = ((cx%P)+P)%P, wy = ((cy%P)+P)%P;
+    const d = Math.hypot(x - (cx + hsh(wx, wy, s)), y - (cy + hsh(wx, wy, s+1)));
+    if (d < d1) { d2 = d1; d1 = d; id = hsh(wx, wy, s+2); } else if (d < d2) d2 = d; }
+  return [d1, d2, id]; }
+const sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x-a)/(b-a))); return t*t*(3-2*t); };
+const GEN = {
+  liscio: () => [1,1,1,.5],
+  intonaco: (u, v, x, y) => { const n = fbm(u,v,4,4,1), g = fbm(u,v,24,2,3), st = Math.max(0, fbm(u,v,2,3,9)-.55)*3.2;
+    let c = 1 + .5*(n-.5) - .35*st + .1*(g-.5); if (hsh(x,y,4) > .992) c *= .72; return [c*1.02, c, c*.97, .5+.4*g]; },
+  mattone: (u, v) => { const ry = v*8, row = Math.floor(ry), fy = ry-row, cx = u*4 + (row%2)*.5, col = Math.floor(cx), fx = cx-col;
+    const e = Math.min(fx, 1-fx, fy, 1-fy), n = fbm(u,v,16,3,2);
+    if (e < .07) return [1.35+.1*n, 1.32+.1*n, 1.2, .12];
+    const k = .8 + .4*hsh(col%4, row, 5) + .25*(n-.5); return [k*1.05, k*.95, k*.92, .7+.2*n]; },
+  pietra: (u, v) => { const [d1, d2, id] = wor(u,v,5,3), e = d2-d1, m = sstep(0, .14, e), k = .8 + .4*id + .15*(fbm(u,v,16,3,1)-.5);
+    const c = .5 + (k-.5)*m; return [c*1.02, c, c*.96, m*.8+.1+.1*fbm(u,v,12,3,4)]; },
+  legno: (u, v) => { const pi = Math.floor(u*5), fu = u*5-pi, gap = fu < .035 || fu > .965, hv = hsh(pi,0,7);
+    const t = v*6 + 2.5*fbm((u+pi*.173)%1, v, 3, 3, pi+11), gr = .5+.5*Math.sin(t*TAU);
+    if (gap) return [.3,.26,.22,.05];
+    const c = (.8 + .35*hv) * (.82 + .3*gr) + .08*(vn2(u,v,8,96,2)-.5); return [c*1.05, c, c*.9, .6+.3*gr]; },
+  piastrelle: (u, v, x, y) => { const fx = (u*2)%1, fy = (v*2)%1, e = Math.min(fx, 1-fx, fy, 1-fy), g = e < .03;
+    let c = g ? .55 : .98 + .05*fbm(u,v,8,2,1); if (!g && hsh(x,y,3) > .985) c *= .88; return [c, c, c*.98, g ? .1 : .85]; },
+  cemento: (u, v, x, y) => { const n = fbm(u,v,5,5,4); let c = .85 + .55*(n-.5); if (hsh(x,y,8) > .992) c *= .55;
+    if (Math.abs(fbm(u,v,3,4,6)-.5) < .005) c *= .7; return [c, c, c*1.02, .5+.4*n]; },
+  metallo: (u, v, x, y) => { const s = vn2(u,v,2,128,3), s2 = vn2(u,v,4,64,5); let c = .9 + .25*(s-.5) + .15*(s2-.5);
+    if (hsh(Math.floor(v*256), Math.floor(u*8), 4) > .97) c *= 1.15; return [c, c, c*1.02, .5+.3*s]; },
+  tessuto: (u, v) => { const a = Math.floor(u*24), b = Math.floor(v*24), over = (a+b) % 2 === 0, fu = u*24-a, fv = v*24-b;
+    const th = over ? Math.sin(fu*Math.PI) : Math.sin(fv*Math.PI), c = .7 + .4*th + .1*(hsh(a,b,1)-.5); return [c, c, c, .3+.6*th]; },
+  pelle: (u, v) => { const n = fbm(u,v,8,3,2), p = vn2(u,v,64,64,3), c = 1 + .1*(n-.5) + .06*(p-.5); return [c, c*.97, c*.95, .5+.15*p]; },
+  capelli: (u, v) => { const t = vn2(u,v,64,3,1), t2 = vn2(u,v,96,5,2), c = .55 + .42*t + .25*t2; return [c, c, c, t]; },
+  cartone: (u, v) => { const w = Math.sin(u*TAU*10), c = .9 + .18*w + .1*(fbm(u,v,8,3,2)-.5); return [c, c*.97, c*.92, .5+.25*w]; },
+  stampa_a: (u, v) => { let c = 1; const cell = Math.floor(u*24);
+    if (v > .1 && v < .28) c = .35; else if (v > .43 && v < .49) c = .62;
+    else if ((v > .56 && v < .63) || (v > .66 && v < .73) || (v > .76 && v < .83)) c = hsh(cell, Math.floor(v*20), 6) > .42 ? .3 : 1;
+    const dx = ((u*3)%1)-.5, dy = ((v*3)%1)-.5; if (v > .3 && v < .42 && Math.hypot(dx, dy*.4) < .22) c = .45;
+    return [c, c, c, .5]; },
+  stampa_b: (u, v) => { const t = ((u+v)*8)%1; let c = t < .5 ? 1 : .45; const dx = ((u*3)%1)-.5, dy = ((v*3)%1)-.5; if (Math.hypot(dx, dy) < .13) c = 1.25;
+    return [c, c, c, .5]; },
+  erba: (u, v) => { const n = fbm(u,v,24,3,1), b = vn2(u,v,8,64,2), p = fbm(u,v,3,3,4), c = .85 + .4*(n-.5) + .25*(b-.5);
+    return [c*(1+.3*(p-.5)), c, c*.75, .5+.5*b]; },
+  selciato: (u, v) => { const [d1, d2, id] = wor(u,v,6,2), e = d2-d1, gap = e < .12, c = gap ? .45 : (.75 + .5*id) * (.85 + .3*(1-Math.min(1, d1*1.5)));
+    return [c, c*.98, c*.94, gap ? .05 : Math.max(.2, 1-d1*1.8)]; },
+  tegole: (u, v) => { const ry = v*6, row = Math.floor(ry), fy = ry-row, cx = u*4 + (row%2)*.5, col = Math.floor(cx), fx = cx-col, hv = hsh(col%4, row, 2);
+    let c = (.85 + .35*hv) * (.7 + .3*Math.min(1, fy/.25)); if (fx < .04 || fx > .96) c *= .6; return [c, c*.92, c*.88, .3 + .7*fy*(1-Math.abs(fx-.5)*.5)]; },
+  corteccia: (u, v) => { const t = vn2(u,v,10,2,3), t2 = vn2(u,v,24,6,4), r = Math.abs(t-.5)*2, c = .5 + .8*(1-r) + .15*(t2-.5); return [c, c*.93, c*.85, 1-r]; },
+  aghi: (u, v) => { const n = vn2(u,v,40,40,1), s = vn2(u,v,12,12,3), c = .7 + .5*n + .2*(s-.5); return [c*.95, c, c*.9, n]; },
+  roccia: (u, v) => { const r = 1 - Math.abs(2*fbm(u,v,3,5,1)-1), c = .7 + .5*r + .1*Math.sin(v*TAU*3 + fbm(u,v,3,3,2)*4); return [c, c, c*1.03, r]; },
+  vetro: (u, v) => { const n = vn2(u,v,3,24,2), sm = fbm(u,v,4,3,5), c = .95 + .2*(n-.5) - (sm > .62 ? .15 : 0); return [c, c, c, .5]; },
+  terra: (u, v, x, y) => { const n = fbm(u,v,8,4,1), sp = hsh(x,y,9) > .97 ? 1.2 : 1, c = (.85 + .5*(n-.5)) * sp; return [c, c*.92, c*.82, n]; },
+  gomma: (u, v) => { const n = fbm(u,v,16,3,2), c = .8 + .3*n; return [c, c, c, .5+.3*n]; },
+  insegna: (u, v) => { const n = fbm(u,v,6,4,5), ch = sstep(.6, .68, n), st = vn2(u,v,6,2,4), c = 1 - .15*(st-.5);
+    return [c*(1-.25*ch), c*(1-.4*ch), c*(1-.55*ch), .5-ch*.4]; },
+  crosta: (u, v, x, y) => { const n = fbm(u,v,6,4,1); let c = .85 + .4*(n-.5); if (hsh(x,y,3) > .985) c *= 1.3; if (Math.abs(fbm(u,v,8,3,7)-.5) < .015) c *= .6;
+    return [c*1.05, c, c*.92, .5+.4*n]; }
+};
+const GENERATORI = DATI.generatori;
+function texData(nome, esporta) {
+  const f = GEN[nome], d = new Uint8Array(TS*TS*4), k = esporta ? 1 : 1/1.5;
+  for (let y = 0; y < TS; y++) for (let x = 0; x < TS; x++) { const r = f(x/TS, y/TS, x, y), i = (y*TS+x)*4;
+    d[i] = Math.max(0, Math.min(255, r[0]*k*255)); d[i+1] = Math.max(0, Math.min(255, r[1]*k*255)); d[i+2] = Math.max(0, Math.min(255, r[2]*k*255));
+    d[i+3] = Math.max(0, Math.min(255, r[3]*255)); }
+  return d;
+}
+const tex = gl.createTexture();
+gl.bindTexture(gl.TEXTURE_2D_ARRAY, tex);
+gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 9, gl.RGBA8, TS, TS, GENERATORI.length);
+function generaTexture() {
+  GENERATORI.forEach((n, i) => gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, i, TS, TS, 1, gl.RGBA, gl.UNSIGNED_BYTE, texData(n, false)));
+  gl.generateMipmap(gl.TEXTURE_2D_ARRAY);
+  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.REPEAT); gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.REPEAT);
+  const an = gl.getExtension('EXT_texture_filter_anisotropic'); if (an) gl.texParameterf(gl.TEXTURE_2D_ARRAY, an.TEXTURE_MAX_ANISOTROPY_EXT, 8);
+}
+function texPNG(i) { const c = document.createElement('canvas'); c.width = c.height = TS; const x = c.getContext('2d'), im = x.createImageData(TS, TS), d = texData(GENERATORI[i], true);
+  for (let p = 0; p < TS*TS; p++) { im.data[p*4] = d[p*4]; im.data[p*4+1] = d[p*4+1]; im.data[p*4+2] = d[p*4+2]; im.data[p*4+3] = 255; } x.putImageData(im, 0, 0); return c; }
+window.__texPNG = i => texPNG(i).toDataURL('image/png'); window.__nTex = GENERATORI.length; window.__nomiTex = GENERATORI;
+
+/* ---------- ora del giorno ---------- */
+const TEMPI = {
+  giorno: {cielo: '#a3b2bb', dens: 0.010, sole: [-0.4,-0.8,-0.45], solec: [.85,.8,.72], amb: [.54,.55,.54], suolo: [.28,.27,.24], lampade: 0, emis: .35, fin: 1.1},
+  sera:   {cielo: '#6a5560', dens: 0.016, sole: [-0.8,-0.22,-0.3], solec: [1.0,.6,.38], amb: [.42,.38,.48], suolo: [.22,.18,.19], lampade: .85, emis: .85, fin: .6},
+  notte:  {cielo: '#0e1626', dens: 0.015, sole: [0.3,-0.7,0.4], solec: [.45,.55,.85], amb: [.3,.37,.6], suolo: [.1,.12,.2], lampade: 1, emis: 1, fin: .18}
+};
+const hash = new URLSearchParams(location.hash.slice(1));
+const mov = {av: 0, la: 0}, tasti = {};
+const stato = {scena: DATI.scene[hash.get('scena')] ? hash.get('scena') : 'negozio', vista: 'orbita', luce: 'giorno', look: 'inquieto', tex: true, ps1: false, marchio: true, etichette: true};
+
+/* ---------- shader ---------- */
+const VS = `#version 300 es
+layout(location=0) in vec3 aP; layout(location=1) in vec3 aN; layout(location=2) in vec3 aC; layout(location=3) in float aM; layout(location=4) in float aE;
+uniform mat4 uVP; uniform vec3 uEye; uniform vec2 uSnap;
+out vec3 vW,vN,vC; out float vM,vE,vD;
+void main(){vec4 p=uVP*vec4(aP,1.);
+ if(uSnap.x>0.){p.xy=floor(p.xy/p.w*uSnap+.5)/uSnap*p.w;}
+ gl_Position=p;vW=aP;vN=aN;vC=aC;vM=aM;vE=aE;vD=distance(aP,uEye);}`;
+const FS = `#version 300 es
+precision highp float; precision highp sampler2DArray;
+in vec3 vW,vN,vC; in float vM,vE,vD;
+uniform sampler2DArray uTex; uniform vec4 uMat[40];
+uniform vec3 uSunDir,uSunCol,uAmbS,uAmbG,uFog,uEye,uLP[4],uLC[4];
+uniform float uFogD,uWear,uSunK,uEmis,uWin,uPS1,uTexOn;
+out vec4 oC;
+float h3(vec3 p){return fract(sin(dot(p,vec3(12.9898,78.233,37.719)))*43758.5453);}
+float vn(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+ return mix(mix(mix(h3(i),h3(i+vec3(1,0,0)),f.x),mix(h3(i+vec3(0,1,0)),h3(i+vec3(1,1,0)),f.x),f.y),
+            mix(mix(h3(i+vec3(0,0,1)),h3(i+vec3(1,0,1)),f.x),mix(h3(i+vec3(0,1,1)),h3(i+vec3(1,1,1)),f.x),f.y),f.z);}
+void main(){
+ vec4 mt=uMat[int(vM+.5)];
+ vec3 N=normalize(vN),base=vC;
+ if(uTexOn>.5){
+  vec3 w=pow(abs(N),vec3(5.));w/=(w.x+w.y+w.z);
+  vec3 p=vW/mt.y;
+  vec4 t=texture(uTex,vec3(p.zy,mt.x))*w.x+texture(uTex,vec3(p.xz,mt.x))*w.y+texture(uTex,vec3(p.xy,mt.x))*w.z;
+  base*=t.rgb*1.5;
+  if(mt.w>0.&&vE<.5){
+   float hh=t.a*mt.w*.02;
+   vec3 dpx=dFdx(vW),dpy=dFdy(vW);float dx=dFdx(hh),dy=dFdy(hh);
+   vec3 r1=cross(dpy,N),r2=cross(N,dpx);float det=dot(dpx,r1);
+   N=normalize(abs(det)*N-sign(det)*(dx*r1+dy*r2));}
+ }
+ float lum=dot(base,vec3(.299,.587,.114));
+ base=mix(vec3(lum),base,1.15-uWear*.4);base*=1.-uWear*.18;
+ vec3 col;
+ if(vE>.5){col=base*(vE>2.5?uWin:(vE>1.5?1.15:uEmis));}
+ else{
+  float nz=vn(vW*3.)*.6+vn(vW*11.)*.4;
+  float sporco=(1.-smoothstep(0.,1.3,vW.y))*.5+nz*.5;
+  base*=1.-uWear*.38*sporco;
+  vec3 V=normalize(uEye-vW);
+  vec3 l=mix(uAmbG,uAmbS,N.y*.5+.5)*uSunK+uSunCol*max(dot(N,-uSunDir),0.)*uSunK;
+  vec3 sp=uSunCol*pow(max(dot(N,normalize(-uSunDir+V)),0.),40.)*uSunK;
+  for(int i=0;i<4;i++){vec3 d=uLP[i]-vW;float q=dot(d,d);vec3 L=normalize(d);float a=1./(1.+.35*q);
+   l+=uLC[i]*a*max(dot(N,L)*.8+.2,0.);sp+=uLC[i]*a*pow(max(dot(N,normalize(L+V)),0.),40.);}
+  col=base*l+sp*mt.z*.6;}
+ float f=1.-exp(-pow(uFogD*vD,2.));col=mix(col,uFog,f);
+ if(uPS1>.5)col=floor(col*10.+.5)/10.;
+ oC=vec4(col,1.);}`;
+function sh(tipo, src) { const s = gl.createShader(tipo); gl.shaderSource(s, src); gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; }
+const prog = gl.createProgram();
+gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS));
+gl.linkProgram(prog); if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+gl.useProgram(prog);
+const U = {}; ['uVP','uEye','uSnap','uSunDir','uSunCol','uAmbS','uAmbG','uFog','uLP','uLC','uFogD','uWear','uSunK','uEmis','uWin','uPS1','uTexOn','uTex','uMat']
+  .forEach(n => U[n] = gl.getUniformLocation(prog, n));
+gl.enable(gl.DEPTH_TEST); gl.enable(gl.CULL_FACE); gl.cullFace(gl.BACK);
+gl.uniform1i(U.uTex, 0);
+{ const m = new Float32Array(40*4); DATI.materiali.forEach((q, i) => { m[i*4] = q[1]; m[i*4+1] = q[2]; m[i*4+2] = q[3]; m[i*4+3] = q[4]; }); gl.uniform4fv(U.uMat, m); }
+
+/* ---------- costruzione della scena (appiattisce le istanze) ---------- */
+let S = null, vaoP, vaoM, bufP, bufM, nP = 0, nM = 0, tris = [];
+function appiattisci(nome, T, prin, mar) {
+  const m = DATI.modelli[nome], c = Math.cos(T.r), s = Math.sin(T.r), k = T.k, t = T.t;
+  for (const p of m.parti) {
+    const out = p.t === 'marchio' ? mar : prin, col = hex(p.c), e = p.t === 'marchio' ? 2 : p.e, nv = p.v.length / 3, W = new Float32Array(nv*3);
+    for (let i = 0; i < nv; i++) { const x = p.v[i*3]/100, y = p.v[i*3+1]/100, z = p.v[i*3+2]/100;
+      W[i*3] = (x*c+z*s)*k+t[0]; W[i*3+1] = y*k+t[1]; W[i*3+2] = (-x*s+z*c)*k+t[2]; }
+    for (let i = 0; i < p.i.length; i += 3) {
+      const a = p.i[i]*3, b = p.i[i+1]*3, d = p.i[i+2]*3;
+      const A = [W[a],W[a+1],W[a+2]], B = [W[b],W[b+1],W[b+2]], D = [W[d],W[d+1],W[d+2]], n = norm(cross(sub(B, A), sub(D, A)));
+      if (!n[0] && !n[1] && !n[2]) continue;
+      for (const v of [A, B, D]) { out.push(v[0],v[1],v[2], n[0],n[1],n[2], col[0],col[1],col[2], p.m, e); tris.push(v[0],v[1],v[2], col[0],col[1],col[2]); }
+    }
+  }
+  for (const [fn, ax, ay, az, rot, sc] of m.figli)
+    appiattisci(fn, {r: T.r + rot*RAD, k: k*sc, t: [(ax*c+az*s)*k+t[0], ay*k+t[1], (-ax*s+az*c)*k+t[2]]}, prin, mar);
+}
+function terrenoJS(out) {
+  const T = DATI.terreno, xs = T.xs, n = xs.length, mi = DATI.materiali.findIndex(m => m[0] === 'erba'), mr = DATI.materiali.findIndex(m => m[0] === 'roccia');
+  const erbe = ['#4a7a2c', '#56803a', '#46722e', '#5a8240'].map(hex), roccia = hex('#8a8c84');
+  let seme = 4; const rnd = () => (seme = (Math.imul(seme, 1664525) + 1013904223) >>> 0) / 4294967296;
+  const P = (a, b) => [xs[a], T.h[b*n+a] / 100, xs[b]];
+  for (let j = 0; j < n-1; j++) for (let i = 0; i < n-1; i++)
+    for (const q of [[P(i,j), P(i+1,j), P(i+1,j+1)], [P(i,j), P(i+1,j+1), P(i,j+1)]]) {
+      let [A, B, C] = q, nv = cross(sub(B, A), sub(C, A));
+      if (nv[1] < 0) { [B, C] = [C, B]; nv = [-nv[0], -nv[1], -nv[2]]; }
+      const ln = Math.hypot(nv[0], nv[1], nv[2]) || 1, nn = [nv[0]/ln, nv[1]/ln, nv[2]/ln], ripido = nn[1] < .78, col = ripido ? roccia : erbe[(rnd()*4)|0];
+      for (const v of [A, B, C]) { out.push(v[0],v[1],v[2], nn[0],nn[1],nn[2], col[0],col[1],col[2], ripido ? mr : mi, 0); tris.push(v[0],v[1],v[2], col[0],col[1],col[2]); }
+    }
+}
+function costruisci(id) {
+  const sc = DATI.scene[id], prin = [], mar = []; tris = [];
+  for (const it of sc.items) { if (it.m === '@terreno') terrenoJS(prin); else appiattisci(it.m, {r: (it.r || 0)*RAD, k: it.s || 1, t: it.p}, prin, mar); }
+  const mk = (a, vao, buf) => {
+    if (!vao) { vao = gl.createVertexArray(); buf = gl.createBuffer(); }
+    gl.bindVertexArray(vao); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(a.length ? a : new Array(11).fill(0)), gl.STATIC_DRAW);
+    [[0,3],[1,3],[2,3],[3,1],[4,1]].reduce((off, [l, dim]) => { gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l, dim, gl.FLOAT, false, 44, off*4); return off + dim; }, 0);
+    return [vao, buf];
+  };
+  [vaoP, bufP] = mk(prin, vaoP, bufP); nP = prin.length / 11;
+  [vaoM, bufM] = mk(mar, vaoM, bufM); nM = mar.length / 11;
+  S = sc;
+  const box = $('#etichette'); box.innerHTML = '';
+  S.el = (sc.etichette || []).map(e => { const sp = document.createElement('span'); sp.textContent = e.t; box.appendChild(sp); return {sp, p: e.p}; });
+  resetCamera();
+}
+
+/* ---------- camera ---------- */
+let cam = {};
+function resetCamera() {
+  if (hash.get('vista') === 'fps' && hash.get('scena') === stato.scena) stato.vista = 'fps';
+  const o = S.orbita; cam = {yaw: o.y * RAD, pitch: o.p * RAD, dist: o.d, t: o.t};
+  if (hash.get('scena') === stato.scena) { if (hash.has('y')) cam.yaw = +hash.get('y') * RAD; if (hash.has('p')) cam.pitch = +hash.get('p') * RAD; if (hash.has('d')) cam.dist = +hash.get('d'); if (hash.has('t')) cam.t = hash.get('t').split(',').map(Number); }
+  if (S.fps) { cam.f = {yaw: S.fps.y * RAD, pitch: S.fps.p * RAD, e: S.fps.e.slice()};
+    if (hash.get('scena') === stato.scena && hash.has('e')) { const q = hash.get('e').split(',').map(Number); cam.f.e = [q[0], 1.65, q[1]]; }
+    if (hash.get('scena') === stato.scena && hash.has('fy')) cam.f.yaw = +hash.get('fy') * RAD; }
+}
+function aggiornaPulsanti() {
+  $('#pad').classList.toggle('on', stato.vista === 'fps' && !!S.fps);
+  const ha = !!S.fps; $('#b-fps').disabled = !ha;
+  if (!ha && stato.vista === 'fps') stato.vista = 'orbita';
+  document.querySelectorAll('[data-vista]').forEach(b => b.classList.toggle('on', b.dataset.vista === stato.vista));
+}
+addEventListener('keydown', e => { tasti[e.key.toLowerCase()] = true; });
+addEventListener('keyup', e => { tasti[e.key.toLowerCase()] = false; });
+document.querySelectorAll('#pad button').forEach(b => { const k = b.dataset.m;
+  const set = v => { if (k === 'av') mov.av = v; if (k === 'in') mov.av = -v; if (k === 'de') mov.la = v; if (k === 'si') mov.la = -v; };
+  b.addEventListener('pointerdown', e => { e.preventDefault(); set(1); }); ['pointerup','pointerleave','pointercancel'].forEach(ev => b.addEventListener(ev, () => set(0))); });
+function scontro(x, z) {
+  const f = S.fps, r = .25, L = f.limiti;
+  if (x < L[0] || x > L[2] || z < L[1] || z > L[3]) return true;
+  return f.ostacoli.some(o => x > o[0]-r && x < o[2]+r && z > o[1]-r && z < o[3]+r);
+}
+function muovi(dt) {
+  if (!(stato.vista === 'fps' && cam.f && S.fps && S.fps.ostacoli)) return;
+  const f = (tasti['w'] || tasti['arrowup'] ? 1 : 0) - (tasti['s'] || tasti['arrowdown'] ? 1 : 0) + mov.av, l = (tasti['d'] || tasti['arrowright'] ? 1 : 0) - (tasti['a'] || tasti['arrowleft'] ? 1 : 0) + mov.la;
+  if (!f && !l) return;
+  const y = cam.f.yaw, n = Math.hypot(f, l) || 1, v = 1.7 * Math.min(dt, .1) / n;
+  const dx = (Math.sin(y) * f - Math.cos(y) * l) * v, dz = (Math.cos(y) * f + Math.sin(y) * l) * v, e = cam.f.e;
+  if (!scontro(e[0] + dx, e[2])) e[0] += dx;
+  if (!scontro(e[0], e[2] + dz)) e[2] += dz;
+}
+const ptrs = new Map();
+cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]); });
+['pointerup','pointercancel'].forEach(ev => cv.addEventListener(ev, e => ptrs.delete(e.pointerId)));
+cv.addEventListener('pointermove', e => {
+  const p = ptrs.get(e.pointerId); if (!p) return;
+  const dx = e.clientX - p[0], dy = e.clientY - p[1];
+  if (ptrs.size === 1) {
+    if (stato.vista === 'fps' && cam.f) { cam.f.yaw += dx*.005; cam.f.pitch = Math.max(-1.2, Math.min(1.2, cam.f.pitch + dy*.004)); }
+    else { cam.yaw -= dx*.006; cam.pitch = Math.max(-.05, Math.min(1.45, cam.pitch + dy*.005)); }
+    ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+  } else if (ptrs.size === 2) {
+    const a = [...ptrs.values()], d0 = Math.hypot(a[0][0]-a[1][0], a[0][1]-a[1][1]);
+    ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+    const b = [...ptrs.values()], d1 = Math.hypot(b[0][0]-b[1][0], b[0][1]-b[1][1]);
+    if (d1 > 1) cam.dist = Math.max(2.5, Math.min(160, cam.dist * d0 / d1));
+  }
+});
+cv.addEventListener('wheel', e => { e.preventDefault(); cam.dist = Math.max(2.5, Math.min(160, cam.dist * (1 + e.deltaY*.001))); }, {passive: false});
+
+/* ---------- disegno ---------- */
+let cw = 0, ch = 0, W = 1, H = 1;
+function ridimensiona() {
+  W = cv.clientWidth || 1; H = cv.clientHeight || 1;
+  const k = stato.ps1 ? 1/3 : Math.min(window.devicePixelRatio || 1, 2);
+  const w = Math.max(2, Math.round(W*k)), h = Math.max(2, Math.round(H*k));
+  if (w !== cw || h !== ch) { cw = w; ch = h; cv.width = w; cv.height = h; }
+}
+const lampi = t => { const x = Math.floor(t / 90) * 12.9898; const r = (Math.sin(x) * 43758.5453) % 1; return Math.abs(r) < .07 ? .3 : 1; };
+let tPrec = 0;
+function frame(t) {
+  muovi((t - (tPrec || t)) / 1000); tPrec = t;
+  ridimensiona(); gl.viewport(0, 0, cw, ch);
+  const T = TEMPI[stato.luce], w = stato.look === 'inquieto' ? 1 : 0, fog = hex(T.cielo);
+  gl.clearColor(fog[0], fog[1], fog[2], 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  let eye, ctr;
+  const fps = stato.vista === 'fps' && cam.f;
+  if (fps) { const f = cam.f; eye = f.e; ctr = [eye[0] + Math.sin(f.yaw)*Math.cos(f.pitch), eye[1] - Math.sin(f.pitch), eye[2] + Math.cos(f.yaw)*Math.cos(f.pitch)]; }
+  else { ctr = cam.t; const cp = Math.cos(cam.pitch); eye = [ctr[0] + cam.dist*cp*Math.sin(cam.yaw), ctr[1] + cam.dist*Math.sin(cam.pitch), ctr[2] + cam.dist*cp*Math.cos(cam.yaw)]; }
+  const lontano = S.far || 500, vicino = lontano > 1000 ? Math.max(0.3, cam.dist * 0.003) : 0.05;
+  const VP = mul(persp((fps ? 72 : 50) * RAD, cw / ch, vicino, lontano), look(eye, ctr));
+  gl.uniformMatrix4fv(U.uVP, false, new Float32Array(VP));
+  gl.uniform3fv(U.uEye, eye);
+  gl.uniform2f(U.uSnap, stato.ps1 ? cw * .35 : 0, stato.ps1 ? ch * .35 : 0);
+  gl.uniform3fv(U.uSunDir, norm(T.sole)); gl.uniform3fv(U.uSunCol, T.solec.map(x => x * .9));
+  gl.uniform3fv(U.uAmbS, T.amb); gl.uniform3fv(U.uAmbG, T.suolo); gl.uniform3fv(U.uFog, fog);
+  gl.uniform1f(U.uFogD, T.dens * (1 + .5*w) * (S.nebbia || 1) * (stato.scena === 'negozio' && fps ? .5 : 1));
+  gl.uniform1f(U.uWear, w); gl.uniform1f(U.uSunK, S.sole);
+  gl.uniform1f(U.uEmis, T.emis); gl.uniform1f(U.uWin, T.fin); gl.uniform1f(U.uPS1, stato.ps1 ? 1 : 0); gl.uniform1f(U.uTexOn, stato.tex ? 1 : 0);
+  const lp = [], lc = [];
+  for (let i = 0; i < 4; i++) {
+    const l = S.luci[i];
+    if (!l) { lp.push(0, -99, 0); lc.push(0, 0, 0); continue; }
+    const k = (l.on === 'sera' ? T.lampade : 1) * l.i * (l.f ? lampi(t) : 1) * (w ? 1 : 1.25);
+    lp.push(...l.p); lc.push(l.c[0]*k, l.c[1]*k, l.c[2]*k);
+  }
+  gl.uniform3fv(U.uLP, lp); gl.uniform3fv(U.uLC, lc);
+  gl.bindTexture(gl.TEXTURE_2D_ARRAY, tex);
+  gl.bindVertexArray(vaoP); gl.drawArrays(gl.TRIANGLES, 0, nP);
+  if (stato.marchio && nM) { gl.bindVertexArray(vaoM); gl.drawArrays(gl.TRIANGLES, 0, nM); }
+  for (const e of S.el) {
+    const p = e.p, cx = VP[0]*p[0]+VP[4]*p[1]+VP[8]*p[2]+VP[12], cy = VP[1]*p[0]+VP[5]*p[1]+VP[9]*p[2]+VP[13], cwv = VP[3]*p[0]+VP[7]*p[1]+VP[11]*p[2]+VP[15];
+    if (!stato.etichette || cwv <= 0.1) { e.sp.style.display = 'none'; continue; }
+    e.sp.style.display = 'block'; e.sp.style.left = ((cx/cwv*.5+.5)*W) + 'px'; e.sp.style.top = ((1-(cy/cwv*.5+.5))*H) + 'px';
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---------- esportazioni ---------- */
+function scarica(nome, blob) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nome; a.click(); }
+$('#b-obj').addEventListener('click', () => {
+  const r = ['# scena ' + stato.scena + ' - 1 unita = 1 metro, Y su, colori nei vertici (v x y z r g b)'];
+  for (let i = 0; i < tris.length; i += 6) r.push(`v ${tris[i].toFixed(4)} ${tris[i+1].toFixed(4)} ${tris[i+2].toFixed(4)} ${tris[i+3].toFixed(3)} ${tris[i+4].toFixed(3)} ${tris[i+5].toFixed(3)}`);
+  for (let i = 1; i <= tris.length / 6; i += 3) r.push(`f ${i} ${i+1} ${i+2}`);
+  scarica('scena_' + stato.scena + '.obj', new Blob([r.join('\n') + '\n'], {type: 'text/plain'}));
+});
+$('#b-tex').addEventListener('click', () => GENERATORI.forEach((n, i) => setTimeout(() => texPNG(i).toBlob(b => scarica(n + '.png', b)), i * 250)));
+
+/* ---------- interfaccia ---------- */
+const gs = $('#g-scena');
+for (const [id, sc] of Object.entries(DATI.scene)) { const b = document.createElement('button'); b.textContent = sc.nome; b.dataset.scena = id; if (id === stato.scena) b.className = 'on'; gs.appendChild(b); }
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.scena) { stato.scena = b.dataset.scena; stato.vista = 'orbita'; costruisci(stato.scena); gs.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); aggiornaPulsanti(); }
+  else if (b.dataset.vista) { stato.vista = b.dataset.vista; aggiornaPulsanti(); }
+  else if (b.dataset.luce) { stato.luce = b.dataset.luce; document.querySelectorAll('[data-luce]').forEach(x => x.classList.toggle('on', x === b)); }
+  else if (b.dataset.look) { stato.look = b.dataset.look; document.querySelectorAll('[data-look]').forEach(x => x.classList.toggle('on', x === b)); vista.classList.toggle('cozy', stato.look === 'cozy'); }
+  else if (b.dataset.opz) { const k = b.dataset.opz; stato[k] = !stato[k]; b.classList.toggle('on', stato[k]); if (k === 'ps1') cv.classList.toggle('ps1', stato.ps1); }
+});
+const el = $('#elenco');
+DATI.file.forEach(f => { const d = document.createElement('div'); d.innerHTML = `<a href="obj_v4/${f.nome}.obj" download>${f.nome}.obj</a> <span>${f.tri} tri</span>`; el.appendChild(d); });
+
+$('#msg').style.display = 'flex';
+setTimeout(() => {
+  generaTexture();
+  const box = $('#tex'); GENERATORI.forEach((n, i) => { if (n === 'liscio') return; const f = document.createElement('figure'); f.appendChild(texPNG(i)); f.appendChild(document.createTextNode(n)); box.appendChild(f); });
+  costruisci(stato.scena); aggiornaPulsanti(); $('#msg').style.display = 'none'; window.__pronto = true; requestAnimationFrame(frame);
+}, 30);
+})();
+</script>
+</body>
+</html>
