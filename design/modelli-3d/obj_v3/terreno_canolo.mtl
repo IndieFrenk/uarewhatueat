@@ -1,0 +1,15 @@
+newmtl erba_56803a
+Kd 0.337 0.502 0.227
+map_Kd texture/erba.png
+newmtl erba_46722e
+Kd 0.275 0.447 0.180
+map_Kd texture/erba.png
+newmtl erba_4a7a2c
+Kd 0.290 0.478 0.173
+map_Kd texture/erba.png
+newmtl erba_5a8240
+Kd 0.353 0.510 0.251
+map_Kd texture/erba.png
+newmtl roccia_8a8c84
+Kd 0.541 0.549 0.518
+map_Kd texture/roccia.png

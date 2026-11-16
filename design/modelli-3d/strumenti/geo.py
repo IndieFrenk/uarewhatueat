@@ -11,12 +11,12 @@ MATERIALI = [
     ('liscio', 'liscio', 1.0, 0.05, 0.0), ('intonaco', 'intonaco', 1.4, 0.04, 0.5), ('mattone', 'mattone', 1.0, 0.05, 1.0),
     ('pietra', 'pietra', 1.6, 0.10, 1.2), ('legno', 'legno', 0.9, 0.15, 0.6), ('piastrelle', 'piastrelle', 0.6, 0.35, 0.9),
     ('piastrelle_muro', 'piastrelle', 0.4, 0.45, 0.8), ('cemento', 'cemento', 1.5, 0.05, 0.5), ('metallo', 'metallo', 0.5, 0.65, 0.15),
-    ('tessuto', 'tessuto', 0.36, 0.02, 0.6), ('pelle', 'pelle', 0.4, 0.12, 0.3), ('capelli', 'capelli', 0.15, 0.30, 0.5),
+    ('tessuto', 'tessuto', 0.55, 0.02, 0.25), ('pelle', 'pelle', 0.4, 0.12, 0.3), ('capelli', 'capelli', 0.15, 0.30, 0.5),
     ('cartone', 'cartone', 0.3, 0.02, 0.7), ('stampa_a', 'stampa_a', 0.25, 0.25, 0.2), ('stampa_b', 'stampa_b', 0.25, 0.25, 0.2),
     ('erba', 'erba', 1.6, 0.02, 0.8), ('selciato', 'selciato', 1.8, 0.10, 1.4), ('tegole', 'tegole', 1.2, 0.10, 1.2),
     ('corteccia', 'corteccia', 0.7, 0.03, 1.2), ('aghi', 'aghi', 0.9, 0.04, 1.0), ('roccia', 'roccia', 8.0, 0.08, 1.5),
     ('vetro', 'vetro', 1.0, 0.85, 0.0), ('terra', 'terra', 1.4, 0.02, 0.9), ('gomma', 'gomma', 0.3, 0.15, 0.4),
-    ('insegna', 'insegna', 1.0, 0.15, 0.5), ('crosta', 'crosta', 0.35, 0.10, 0.8),
+    ('insegna', 'insegna', 1.0, 0.15, 0.5), ('crosta', 'crosta', 0.35, 0.10, 0.8), ('acqua', 'vetro', 3.0, 0.9, 0.0),
 ]
 MI = {m[0]: i for i, m in enumerate(MATERIALI)}
 GEN = sorted({m[1] for m in MATERIALI}, key=[m[1] for m in MATERIALI].index)

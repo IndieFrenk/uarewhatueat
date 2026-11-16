@@ -1,0 +1,6 @@
+newmtl stampa_b_2e86de
+Kd 0.180 0.525 0.871
+map_Kd texture/stampa_b.png
+newmtl stampa_a_ffd23f
+Kd 1.000 0.824 0.247
+map_Kd texture/stampa_a.png
