@@ -1,0 +1,48 @@
+newmtl m0
+Kd 0.420 0.290 0.184
+newmtl m1
+Kd 0.541 0.416 0.267
+newmtl m2
+Kd 0.710 0.475 0.227
+newmtl m3
+Kd 0.878 0.749 0.290
+newmtl m4
+Kd 0.847 0.812 0.714
+newmtl m5
+Kd 0.659 0.208 0.173
+newmtl m6
+Kd 0.914 0.922 0.933
+newmtl m7
+Kd 0.247 0.435 0.710
+newmtl m8
+Kd 0.478 0.231 0.180
+newmtl m9
+Kd 0.851 0.604 0.118
+newmtl m10
+Kd 0.345 0.498 0.220
+newmtl m11
+Kd 0.839 0.153 0.604
+newmtl m12
+Kd 0.949 0.824 0.106
+newmtl m13
+Kd 0.722 0.196 0.165
+newmtl m14
+Kd 0.180 0.525 0.871
+newmtl m15
+Kd 1.000 0.824 0.247
+newmtl m16
+Kd 1.000 0.494 0.714
+newmtl m17
+Kd 0.545 0.878 1.000
+newmtl m18
+Kd 0.184 0.420 0.227
+newmtl m19
+Kd 0.820 0.180 0.180
+newmtl m20
+Kd 0.933 0.933 0.933
+newmtl m21
+Kd 0.227 0.627 1.000
+newmtl m22
+Kd 1.000 1.000 1.000
+newmtl m23
+Kd 0.184 0.435 0.812
