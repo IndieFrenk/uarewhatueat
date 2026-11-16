@@ -110,6 +110,10 @@ public class GlobalConfig : MonoBehaviour
     [Tooltip("Intensità della luce notturna")]
     public float nightLightIntensity = 0.3f;
 
+    [Header("=== SOLDI ===")]
+    [Tooltip("Risparmi di partenza in lire (la X della trama)")]
+    public int startingSavings = 500000;
+
     // VARIABILI RUNTIME (non modificabili dall'inspector)
     [HideInInspector] public float currentHour = 7f;
     [HideInInspector] public float currentMinute = 0f;
