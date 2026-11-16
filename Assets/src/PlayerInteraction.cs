@@ -65,8 +65,14 @@ public class PlayerInteraction : MonoBehaviour
             placementLayer = ~0; // Everything
     }
 
+    /// <summary>L'Interactable che il giocatore sta guardando (per il prompt a schermo).</summary>
+    public static Interactable Looking;
+
     void Update()
     {
+        if (FPSController.InputBlocked) return;
+        Looking = heldItem == null ? FindInteractable() : null;
+
         // Handle input first
         HandleInput();
 
@@ -184,8 +190,8 @@ public class PlayerInteraction : MonoBehaviour
         // Grab
         if (Input.GetKeyDown(grabKey))
         {
-            if (heldItem == null)
-                TryGrabItem();
+            if (heldItem == null && !TryGrabItem() && Looking != null && Looking.CanInteract)
+                Looking.Interact();
         }
 
         // Place
@@ -218,7 +224,7 @@ public class PlayerInteraction : MonoBehaviour
     /// <summary>
     /// Try to grab an item
     /// </summary>
-    void TryGrabItem()
+    bool TryGrabItem()
     {
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
         RaycastHit[] hits = Physics.RaycastAll(ray, grabDistance);
@@ -233,12 +239,20 @@ public class PlayerInteraction : MonoBehaviour
             if (item != null && !item.isBeingHeld)
             {
                 GrabItem(item);
-                return;
+                return true;
             }
         }
 
         if (debugMode)
             Debug.Log("No item found to grab");
+        return false;
+    }
+
+    Interactable FindInteractable()
+    {
+        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        return Physics.Raycast(ray, out RaycastHit hit, grabDistance, ~0, QueryTriggerInteraction.Collide)
+            ? hit.collider.GetComponentInParent<Interactable>() : null;
     }
 
     /// <summary>

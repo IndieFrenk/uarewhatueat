@@ -122,8 +122,12 @@ public class FPSController : MonoBehaviour
         }
     }
 
+    /// <summary>True mentre è aperto un menu (UIKit): niente movimento né visuale.</summary>
+    public static bool InputBlocked;
+
     private void Update()
     {
+        if (InputBlocked) return;
         HandleGroundCheck();
         HandleMouseLook();
         HandleMovement();

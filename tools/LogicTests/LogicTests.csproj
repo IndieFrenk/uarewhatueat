@@ -1,0 +1,12 @@
+<!-- Test della logica pura (Assets/src/Core): dotnet run, progetto tools/LogicTests -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\Assets\src\Core\**\*.cs" />
+  </ItemGroup>
+</Project>

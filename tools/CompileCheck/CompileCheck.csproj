@@ -1,0 +1,20 @@
+<!-- Controllo di compilazione fuori dall'editor: dotnet build tools/CompileCheck -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <NoWarn>CS0618;CS0414;CS0649;CS0169;CS0067</NoWarn>
+    <UnityData>C:\Program Files\Unity\Hub\Editor\6000.2.6f2\Editor\Data</UnityData>
+    <Root>$(MSBuildThisFileDirectory)..\..</Root>
+    <!-- nei worktree Library non c'è: usa quella del checkout principale -->
+    <Lib>$(Root)\Library\ScriptAssemblies</Lib>
+    <Lib Condition="!Exists('$(Lib)')">C:\Users\frenk\RiderProjects\uarewhatueat\Library\ScriptAssemblies</Lib>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(Root)\Assets\src\**\*.cs" />
+    <Reference Include="$(UnityData)\Managed\UnityEngine\*.dll" Private="false" />
+    <Reference Include="$(Lib)\UnityEngine.UI.dll;$(Lib)\Unity.TextMeshPro.dll;$(Lib)\Unity.AI.Navigation.dll;$(Lib)\Unity.InputSystem.dll;$(Lib)\Unity.RenderPipelines.Core.Runtime.dll;$(Lib)\Unity.RenderPipelines.Universal.Runtime.dll" Private="false" />
+  </ItemGroup>
+</Project>
