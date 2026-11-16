@@ -1,6 +1,6 @@
 # TRAMA
 
-Legenda: il testo normale è deciso da Francesco. Le voci **[proposta]** sono idee dello sceneggiatore. Quelle presenti nella prima stesura sono state **approvate da Francesco**; le nuove proposte vanno ancora confermate.
+Legenda: il testo normale è deciso da Francesco. Le voci **[proposta]** sono idee dello sceneggiatore. Tutte quelle rimaste nel file sono state **approvate da Francesco**; quelle scartate sono state tolte.
 
 **Asse tematico (deciso):** industriale contro naturale. Cibo industriale, alcol e simili fanno sparire il marchio, il cibo naturale lo mantiene. Il gioco lascia l'amaro in bocca: ci si affeziona ai paesani e poi vengono portati via.
 
@@ -51,15 +51,12 @@ Il paese scompare piano piano. La scelta di chi viene preso è **casuale**, non 
 - **Il salutista che si deprime:** mangia sano, ha il marchio, poi cade in depressione e mangia solo cibi brutti. Perde il marchio e viene preso. Il cibo sano non basta se si smette di curarsi.
 - **Quelli che lo capiscono troppo tardi o a metà:** intuiscono che industriale e alcol fanno sparire il marchio, e **lo fanno apposta** per liberarsene, convinti che il marchio sia una condanna. Scoprono l'amara realtà.
 - **[proposta] Il caso inverso:** un vizioso che per caso inizia a mangiare bene (un periodo di digiuno, un regalo di verdure) e acquista il marchio senza sapere perché.
-- **[proposta] Il bevitore del bar:** il barista, o il compagno di bevute del protagonista. Più simile al protagonista, quindi ogni sua sparizione lo avvicina al rischio.
 
 ## Il paese e il protagonista
 
 - Il giocatore **può parlarne in paese, ma lo prendono in giro**. Non viene creduto.
 - L'unico modo per spingerli è **non vendere cibi industriali**, anche se rendono molto di più.
 - **Soglia di sacrificio:** per salvarli il giocatore rinuncia ai guadagni e può andare **in negativo sui risparmi iniziali**. C'è un limite oltre il quale il negozio non regge: il sacrificio ha un prezzo reale e il giocatore decide fin dove spingersi.
-- **[proposta] Il paradosso dell'offerta:** i paesani non smettono di mangiare industriale solo perché il negozio non lo vende. Possono comprarlo fuori (dal camion, dal bar, da un ambulante), quindi il giocatore non salva nessuno con certezza.
-- **[proposta] Costo dell'altro lato:** vendere meno industriale riduce gli incassi e può far calare anche la fiducia del paese verso il negozio.
 
 ## Come si raccoglie l'informazione
 
@@ -94,12 +91,18 @@ Il marchio resta o scompare a seconda del cibo. **[proposta]** Quattro finali:
 3. **Salvezza condivisa:** la figlia e molti paesani si salvano, perché il protagonista ha cambiato il negozio e ha collaborato con il cospirazionista.
 4. **Finale amaro:** la verità è completa, il negozio è fallito, il paese ha smesso di comprare da lui.
 
-## Struttura in atti **[proposta]**
+## Durata e ritmo
 
-1. **Primo atto, giorni 1-7:** vita normale, compare il marchio, prima sparizione. Si impara la routine.
-2. **Secondo atto A, giorni 8-20:** le sparizioni aumentano, la teoria del paradiso si diffonde. Il bar diventa il centro delle voci.
-3. **Secondo atto B, giorni 21-30:** il marchio si sposta da persona a persona. Si incontra il cospirazionista. Primi segnali sulla figlia.
-4. **Terzo atto, giorni 31-40:** decifrazione dei simboli e finale.
+- Una partita dura **circa una settimana di gioco** (7 giorni), pari a **1-2 ore reali** senza essere prolissi. Oltre sarebbe troppo lungo.
+- Si rigioca per vedere gli altri finali, quindi la durata complessiva sale.
+- **L'orologio di gioco si ferma** nei momenti di respiro: prima di aprire il negozio, al bar, mentre si esplora il paese. Il tempo corre solo mentre si lavora, si bada alla figlia o si cerca di sopravvivere alla giornata.
+- Con `timeScale = 60` (1 minuto reale = 1 ora di gioco) un giorno intero dalle 7 a mezzanotte dura circa 17 minuti, quindi 7 giorni sono circa 2 ore. Con le pause l'orologio va un po' più veloce o si riduce l'arco della giornata, da tarare nel gioco.
+
+## Struttura in atti
+
+1. **Giorni 1-2:** vita normale, compare il marchio, prima sparizione. Si impara la routine, si conoscono i paesani.
+2. **Giorni 3-5:** le sparizioni aumentano, la teoria del paradiso si diffonde. Si incontra il cospirazionista. Primi segnali sulla figlia. Il marchio passa da persona a persona.
+3. **Giorni 6-7:** decifrazione dei simboli, resa dei conti sulla figlia, finale.
 
 ## Decifrare la scritta **[proposta]**
 
@@ -110,11 +113,10 @@ Sulla fronte di ogni persona compaiono pezzi diversi dello stesso testo. Il gioc
 - Il protagonista non ha il marchio all'inizio (beveva troppo).
 - Industriale contro naturale. Il cibo grasso ma casalingo conta come naturale.
 - Il giocatore può avvertire il paese, ma viene deriso. Può solo spingerli non vendendo industriale.
+- Durata: una settimana di gioco (1-2 ore reali), con l'orologio fermo nei momenti di respiro.
 
 ## Cose da decidere
 
 - **Fumo:** toglie il marchio come l'alcol, o è neutro? Francesco ha detto che c'è chi fuma, ma non ha detto l'effetto.
 - **Entità della soglia:** quanti risparmi iniziali si possono perdere prima che il negozio chiuda (e che succede se chiude).
-- Il protagonista può smettere di bere? **[proposta]** Sì, ed è un mezzo per riavere il marchio, ma costa fatica (astinenza, giorni difficili).
-- Durata: circa 40 giorni di gioco, o più brevi?
 - Tono: quanto horror, quanta tristezza? Il finale amaro è deciso, ma va dosato.
