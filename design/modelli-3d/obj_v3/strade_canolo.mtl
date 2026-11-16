@@ -1,0 +1,6 @@
+newmtl cemento_5b5e61
+Kd 0.357 0.369 0.380
+map_Kd texture/cemento.png
+newmtl terra_a08a6a
+Kd 0.627 0.541 0.416
+map_Kd texture/terra.png

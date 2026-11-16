@@ -1,0 +1,6 @@
+newmtl crosta_c98a45
+Kd 0.788 0.541 0.271
+map_Kd texture/crosta.png
+newmtl crosta_efd9a8
+Kd 0.937 0.851 0.659
+map_Kd texture/crosta.png

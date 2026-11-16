@@ -1,0 +1,7 @@
+newmtl vetro_c9b27a_e
+Kd 0.788 0.698 0.478
+map_Kd texture/vetro.png
+Ke 0.788 0.698 0.478
+newmtl pietra_a89d86
+Kd 0.659 0.616 0.525
+map_Kd texture/pietra.png

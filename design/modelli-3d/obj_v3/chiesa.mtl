@@ -1,0 +1,55 @@
+newmtl intonaco_c9bfa6
+Kd 0.788 0.749 0.651
+map_Kd texture/intonaco.png
+newmtl pietra_9c917b
+Kd 0.612 0.569 0.482
+map_Kd texture/pietra.png
+newmtl tegole_6a4a40
+Kd 0.416 0.290 0.251
+map_Kd texture/tegole.png
+newmtl tegole_4a3028
+Kd 0.290 0.188 0.157
+map_Kd texture/tegole.png
+newmtl metallo_6a6e72
+Kd 0.416 0.431 0.447
+map_Kd texture/metallo.png
+newmtl pietra_a89d86
+Kd 0.659 0.616 0.525
+map_Kd texture/pietra.png
+newmtl legno_3b2a20
+Kd 0.231 0.165 0.125
+map_Kd texture/legno.png
+newmtl legno_4b362a
+Kd 0.294 0.212 0.165
+map_Kd texture/legno.png
+newmtl metallo_c9a227
+Kd 0.788 0.635 0.153
+map_Kd texture/metallo.png
+newmtl pietra_8a7e6a
+Kd 0.541 0.494 0.416
+map_Kd texture/pietra.png
+newmtl pietra_9a8e7a
+Kd 0.604 0.557 0.478
+map_Kd texture/pietra.png
+newmtl vetro_c9b27a_e
+Kd 0.788 0.698 0.478
+map_Kd texture/vetro.png
+Ke 0.788 0.698 0.478
+newmtl liscio_1b1512
+Kd 0.106 0.082 0.071
+newmtl legno_4a3a2c
+Kd 0.290 0.227 0.173
+map_Kd texture/legno.png
+newmtl liscio_f4f1e6
+Kd 0.957 0.945 0.902
+newmtl metallo_2a2a2a
+Kd 0.165 0.165 0.165
+map_Kd texture/metallo.png
+newmtl liscio_1b1b1b
+Kd 0.106 0.106 0.106
+newmtl tegole_4a4f58
+Kd 0.290 0.310 0.345
+map_Kd texture/tegole.png
+newmtl metallo_3a3d40
+Kd 0.227 0.239 0.251
+map_Kd texture/metallo.png

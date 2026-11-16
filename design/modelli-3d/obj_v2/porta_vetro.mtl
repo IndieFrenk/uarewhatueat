@@ -1,0 +1,13 @@
+newmtl legno_4b6a50
+Kd 0.294 0.416 0.314
+map_Kd texture/legno.png
+newmtl vetro_bcd6d8_e
+Kd 0.737 0.839 0.847
+map_Kd texture/vetro.png
+Ke 0.737 0.839 0.847
+newmtl metallo_c8cdd0
+Kd 0.784 0.804 0.816
+map_Kd texture/metallo.png
+newmtl stampa_a_d93a2f
+Kd 0.851 0.227 0.184
+map_Kd texture/stampa_a.png

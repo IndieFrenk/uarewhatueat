@@ -13,3 +13,7 @@ Gestionale di un supermercato in prima persona (Unity 6, HDRP) con un tocco di h
 Vedi `TRAMA.md` (ambientazione, personaggi, mistero, finali). Le voci segnate «[proposta]» non sono ancora approvate da Francesco.
 
 Sintesi: bottegaio vedovo di un paesino di montagna anni 90, con una figlia. Alcuni paesani hanno un marchio in fronte, chi non ce l'ha viene «chiamato al cielo». Il marchio dice «non commestibile»: gli altri vengono mangiati. Cibo spazzatura = marchio che scompare. I finali dipendono da cosa mangiano il protagonista e la figlia.
+
+## Roadmap
+
+Vedi `ROADMAP.md` per lo stato del lavoro e i prossimi passi.

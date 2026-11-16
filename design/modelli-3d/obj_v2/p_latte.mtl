@@ -1,0 +1,5 @@
+newmtl stampa_a_e8eef5
+Kd 0.910 0.933 0.961
+map_Kd texture/stampa_a.png
+newmtl liscio_3f6fb5
+Kd 0.247 0.435 0.710

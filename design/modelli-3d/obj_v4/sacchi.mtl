@@ -1,0 +1,6 @@
+newmtl tessuto_e8dcc0
+Kd 0.910 0.863 0.753
+map_Kd texture/tessuto.png
+newmtl stampa_a_c0392b
+Kd 0.753 0.224 0.169
+map_Kd texture/stampa_a.png

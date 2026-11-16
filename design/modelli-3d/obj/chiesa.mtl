@@ -1,0 +1,21 @@
+newmtl m0
+Kd 0.722 0.667 0.573
+newmtl m1
+Kd 0.416 0.290 0.251
+newmtl m2
+Kd 0.690 0.635 0.541
+newmtl m3
+Kd 0.290 0.251 0.220
+newmtl m4
+Kd 0.106 0.082 0.071
+newmtl m5
+Kd 0.231 0.165 0.125
+newmtl m6
+Kd 0.612 0.561 0.471
+newmtl m7
+Kd 0.541 0.494 0.416
+newmtl m8
+Kd 0.478 0.424 0.345
+newmtl m9
+Kd 0.788 0.698 0.478
+Ke 0.788 0.698 0.478

@@ -1,0 +1,110 @@
+newmtl cemento_8d8f8e
+Kd 0.553 0.561 0.557
+map_Kd texture/cemento.png
+newmtl cemento_6d6f6e
+Kd 0.427 0.435 0.431
+map_Kd texture/cemento.png
+newmtl intonaco_bdb8a6
+Kd 0.741 0.722 0.651
+map_Kd texture/intonaco.png
+newmtl intonaco_c4bfae
+Kd 0.769 0.749 0.682
+map_Kd texture/intonaco.png
+newmtl legno_4a3523
+Kd 0.290 0.208 0.137
+map_Kd texture/legno.png
+newmtl metallo_5a5f63
+Kd 0.353 0.373 0.388
+map_Kd texture/metallo.png
+newmtl liscio_e8f4ff_e
+Kd 0.910 0.957 1.000
+Ke 0.910 0.957 1.000
+newmtl metallo_2a2a2a
+Kd 0.165 0.165 0.165
+map_Kd texture/metallo.png
+newmtl liscio_ffe7b0_e
+Kd 1.000 0.906 0.690
+Ke 1.000 0.906 0.690
+newmtl metallo_9aa1a6
+Kd 0.604 0.631 0.651
+map_Kd texture/metallo.png
+newmtl metallo_8d949a
+Kd 0.553 0.580 0.604
+map_Kd texture/metallo.png
+newmtl metallo_5a5f64
+Kd 0.353 0.373 0.392
+map_Kd texture/metallo.png
+newmtl liscio_fff0c8_e
+Kd 1.000 0.941 0.784
+Ke 1.000 0.941 0.784
+newmtl metallo_2f5a8a
+Kd 0.184 0.353 0.541
+map_Kd texture/metallo.png
+newmtl metallo_c97a2a
+Kd 0.788 0.478 0.165
+map_Kd texture/metallo.png
+newmtl legno_a07f4a
+Kd 0.627 0.498 0.290
+map_Kd texture/legno.png
+newmtl cartone_b89a6a
+Kd 0.722 0.604 0.416
+map_Kd texture/cartone.png
+newmtl liscio_d8c9a0
+Kd 0.847 0.788 0.627
+newmtl stampa_a_f4efd8
+Kd 0.957 0.937 0.847
+map_Kd texture/stampa_a.png
+newmtl cartone_c4a676
+Kd 0.769 0.651 0.463
+map_Kd texture/cartone.png
+newmtl cartone_a98a5a
+Kd 0.663 0.541 0.353
+map_Kd texture/cartone.png
+newmtl legno_7a5a38
+Kd 0.478 0.353 0.220
+map_Kd texture/legno.png
+newmtl legno_5a4228
+Kd 0.353 0.259 0.157
+map_Kd texture/legno.png
+newmtl legno_6b4a2f
+Kd 0.420 0.290 0.184
+map_Kd texture/legno.png
+newmtl stampa_a_e8e4d4
+Kd 0.910 0.894 0.831
+map_Kd texture/stampa_a.png
+newmtl legno_3a2a1c
+Kd 0.227 0.165 0.110
+map_Kd texture/legno.png
+newmtl liscio_ffd9a0_e
+Kd 1.000 0.851 0.627
+Ke 1.000 0.851 0.627
+newmtl metallo_3a3d40
+Kd 0.227 0.239 0.251
+map_Kd texture/metallo.png
+newmtl metallo_e8eaec
+Kd 0.910 0.918 0.925
+map_Kd texture/metallo.png
+newmtl gomma_2b2b2b
+Kd 0.169 0.169 0.169
+map_Kd texture/gomma.png
+newmtl metallo_f3f5f6
+Kd 0.953 0.961 0.965
+map_Kd texture/metallo.png
+newmtl liscio_3bbf6a_e
+Kd 0.231 0.749 0.416
+Ke 0.231 0.749 0.416
+newmtl stampa_a_3aa0ff
+Kd 0.227 0.627 1.000
+map_Kd texture/stampa_a.png
+newmtl legno_8a6a3c
+Kd 0.541 0.416 0.235
+map_Kd texture/legno.png
+newmtl tessuto_e8dcc0
+Kd 0.910 0.863 0.753
+map_Kd texture/tessuto.png
+newmtl stampa_a_c0392b
+Kd 0.753 0.224 0.169
+map_Kd texture/stampa_a.png
+newmtl gomma_1b1b1b
+Kd 0.106 0.106 0.106
+map_Kd texture/gomma.png

@@ -1,0 +1,14 @@
+newmtl legno_8a6a3c
+Kd 0.541 0.416 0.235
+map_Kd texture/legno.png
+newmtl legno_a07f4a
+Kd 0.627 0.498 0.290
+map_Kd texture/legno.png
+newmtl cartone_b89a6a
+Kd 0.722 0.604 0.416
+map_Kd texture/cartone.png
+newmtl liscio_d8c9a0
+Kd 0.847 0.788 0.627
+newmtl stampa_a_f4efd8
+Kd 0.957 0.937 0.847
+map_Kd texture/stampa_a.png
