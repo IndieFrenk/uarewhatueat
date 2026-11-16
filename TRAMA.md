@@ -56,7 +56,11 @@ Il paese scompare piano piano. La scelta di chi viene preso è **casuale**, non 
 
 - Il giocatore **può parlarne in paese, ma lo prendono in giro**. Non viene creduto.
 - L'unico modo per spingerli è **non vendere cibi industriali**, anche se rendono molto di più.
-- **Soglia di sacrificio:** per salvarli il giocatore rinuncia ai guadagni e può andare **in negativo sui risparmi iniziali**. C'è un limite oltre il quale il negozio non regge: il sacrificio ha un prezzo reale e il giocatore decide fin dove spingersi.
+- **Soglia di sacrificio (andamento dei soldi):** il protagonista parte con una somma X di risparmi.
+  1. All'inizio il negozio guadagna, soprattutto grazie all'industriale.
+  2. Quando il giocatore capisce la regola e smette di vendere industriale o abbassa i prezzi dei prodotti naturali per farli comprare, i guadagni scendono.
+  3. I paesani vanno a comprare altrove (camion, bar, ambulante), quindi il giocatore non salva nessuno con certezza.
+  4. Il negozio erode i risparmi, fino a restare sotto la somma di partenza, **ma il saldo non diventa mai davvero negativo** (niente bancarotta o game over per soldi). Il sacrificio si sente in tutto il resto: meno merce, meno scelta, meno margine.
 
 ## Come si raccoglie l'informazione
 
@@ -113,10 +117,11 @@ Sulla fronte di ogni persona compaiono pezzi diversi dello stesso testo. Il gioc
 - Il protagonista non ha il marchio all'inizio (beveva troppo).
 - Industriale contro naturale. Il cibo grasso ma casalingo conta come naturale.
 - Il giocatore può avvertire il paese, ma viene deriso. Può solo spingerli non vendendo industriale.
+- Il **fumo** toglie il marchio, come alcol e cibo industriale.
+- Il saldo del negozio non va mai sotto zero: i risparmi si erodono ma non c'è bancarotta.
 - Durata: una settimana di gioco (1-2 ore reali), con l'orologio fermo nei momenti di respiro.
 
 ## Cose da decidere
 
-- **Fumo:** toglie il marchio come l'alcol, o è neutro? Francesco ha detto che c'è chi fuma, ma non ha detto l'effetto.
-- **Entità della soglia:** quanti risparmi iniziali si possono perdere prima che il negozio chiuda (e che succede se chiude).
+- **Quanto vale X** (i risparmi di partenza) e di quanto possono scendere gli incassi: da tarare con il bilanciamento.
 - Tono: quanto horror, quanta tristezza? Il finale amaro è deciso, ma va dosato.
