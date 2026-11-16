@@ -1,0 +1,6 @@
+newmtl roccia_8d8d86
+Kd 0.553 0.553 0.525
+map_Kd texture/roccia.png
+newmtl roccia_7a7a74
+Kd 0.478 0.478 0.455
+map_Kd texture/roccia.png

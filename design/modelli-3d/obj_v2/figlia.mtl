@@ -1,0 +1,56 @@
+newmtl tessuto_5a4f63
+Kd 0.353 0.310 0.388
+map_Kd texture/tessuto.png
+newmtl pelle_2b2623
+Kd 0.169 0.149 0.137
+map_Kd texture/pelle.png
+newmtl gomma_151515
+Kd 0.082 0.082 0.082
+map_Kd texture/gomma.png
+newmtl tessuto_d9c25a
+Kd 0.851 0.761 0.353
+map_Kd texture/tessuto.png
+newmtl gomma_3a2a1c
+Kd 0.227 0.165 0.110
+map_Kd texture/gomma.png
+newmtl metallo_c9a227
+Kd 0.788 0.635 0.153
+map_Kd texture/metallo.png
+newmtl liscio_e8e4d4
+Kd 0.910 0.894 0.831
+newmtl pelle_d6a98a
+Kd 0.839 0.663 0.541
+map_Kd texture/pelle.png
+newmtl tessuto_f1e3c4
+Kd 0.945 0.890 0.769
+map_Kd texture/tessuto.png
+newmtl legno_e8e4d4
+Kd 0.910 0.894 0.831
+map_Kd texture/legno.png
+newmtl liscio_ff5fa2
+Kd 1.000 0.373 0.635
+newmtl pelle_c9967a
+Kd 0.788 0.588 0.478
+map_Kd texture/pelle.png
+newmtl liscio_efe9df
+Kd 0.937 0.914 0.875
+newmtl liscio_1c1a1a
+Kd 0.110 0.102 0.102
+newmtl capelli_3a2e26
+Kd 0.227 0.180 0.149
+map_Kd texture/capelli.png
+newmtl liscio_6a2f2f
+Kd 0.416 0.184 0.184
+newmtl liscio_b07070
+Kd 0.690 0.439 0.439
+newmtl capelli_4a3328
+Kd 0.290 0.200 0.157
+map_Kd texture/capelli.png
+newmtl tessuto_d9534f
+Kd 0.851 0.325 0.310
+map_Kd texture/tessuto.png
+newmtl liscio_5a2a20
+Kd 0.353 0.165 0.125
+newmtl liscio_ffb347_e
+Kd 1.000 0.702 0.278
+Ke 1.000 0.702 0.278

@@ -1,0 +1,9 @@
+newmtl vetro_d99a1e
+Kd 0.851 0.604 0.118
+map_Kd texture/vetro.png
+newmtl stampa_a_f1e4b8
+Kd 0.945 0.894 0.722
+map_Kd texture/stampa_a.png
+newmtl metallo_c9a227
+Kd 0.788 0.635 0.153
+map_Kd texture/metallo.png
