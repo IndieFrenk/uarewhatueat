@@ -38,6 +38,10 @@ public class GameState
     public event Action<GamePhase> PhaseChanged;
     public event Action<Villager> VillagerTaken;
     public event Action<string> Message;                     // notifica a schermo
+    /// <summary>Il giocatore ha finito l'attività della fase (es. esce dal bar). GameFlow passa alla fase dopo.</summary>
+    public event Action AdvanceRequested;
+    /// <summary>Inizio notte, prima di MarkRules.ApplyDay: chi deve aggiungere cosa si è mangiato oggi lo fa qui.</summary>
+    public event Action DayEnding;
 
     public GameState(int seed, int startingSavings)
     {
@@ -48,6 +52,8 @@ public class GameState
     public void SetPhase(GamePhase p) { Phase = p; PhaseChanged?.Invoke(p); }
     public void RaiseTaken(Villager v) => VillagerTaken?.Invoke(v);
     public void Say(string msg) => Message?.Invoke(msg);
+    public void RequestAdvance() => AdvanceRequested?.Invoke();
+    public void RaiseDayEnding() => DayEnding?.Invoke();
 
     public Villager Find(string id) => Villagers.Find(v => v.Id == id);
     public IEnumerable<Villager> Everyone()
