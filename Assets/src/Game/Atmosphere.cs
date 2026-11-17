@@ -13,11 +13,13 @@ public class Atmosphere : MonoBehaviour
     private float lastFlickerTime;
     private float nextFlickerInterval;
     private AudioSource audioSource;
+    private Color dayFogColor;
 
     void Start()
     {
         cfg = GlobalConfig.Instance;
         RenderSettings.fog = true;
+        dayFogColor = RenderSettings.fogColor;
 
         // Iscriviti agli eventi
         if (GameState.Current != null)
@@ -62,8 +64,13 @@ public class Atmosphere : MonoBehaviour
             fogIntensity = Mathf.Clamp01(fogIntensity);
         }
 
-        float density = Mathf.Lerp(cfg.fogDensityMin, cfg.fogDensityMax, fogIntensity) + dayMultiplier;
-        RenderSettings.fogDensity = Mathf.Clamp(density, cfg.fogDensityMin, cfg.fogDensityMax + dayMultiplier);
+        // notte profonda: nebbia più fitta, scura, e luce ambientale che cala (cresce con l'ora, quindi col bar)
+        float deep = fogIntensity * fogIntensity;
+        float max = cfg.fogDensityMax + cfg.nightFogExtra * deep + dayMultiplier;
+        float density = Mathf.Lerp(cfg.fogDensityMin, cfg.fogDensityMax, fogIntensity) + cfg.nightFogExtra * deep + dayMultiplier;
+        RenderSettings.fogDensity = Mathf.Clamp(density, cfg.fogDensityMin, max);
+        RenderSettings.fogColor = Color.Lerp(dayFogColor, cfg.nightFogColor, fogIntensity);
+        RenderSettings.ambientIntensity = Mathf.Lerp(1f, cfg.nightAmbientIntensity, fogIntensity);
     }
 
     void UpdateShopLights()

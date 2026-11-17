@@ -33,7 +33,7 @@ public static class BarScene
         var seats = WorldAnchors.BarSeats;
         if (seats == null || seats.Length == 0) { Debug.LogWarning("BarScene: WorldAnchors.BarSeats vuoto, nessun paesano al bar."); return; }
 
-        var vitt = s.Day >= 3 ? s.Find(Consp) : null;
+        var vitt = s.Day >= Roster.ConspAppearDay ? s.Find(Consp) : null;
         if (vitt != null && vitt.Taken) vitt = null;
         int free = seats.Length - (vitt != null ? 1 : 0);
 
@@ -110,8 +110,10 @@ public static class BarScene
             opts.Add(("Chiacchierare", () => Chat(s, v)));
             if (v.HasVisibleMark && !s.Clues.Contains("frag_mark_" + v.Id)) opts.Add(("Guarda il segno sulla fronte", () => LookMark(v)));
             opts.Add(("Avvertirlo: «stanno mangiando la gente»", () => Warn(s, v)));
-            opts.Add(("Offri da bere", () => Drink(s, v)));
+            opts.Add(($"Offri da bere a {v.Name} ({GlobalConfig.Instance.barRoundCost} lire)", () => Drink(s, v)));
         }
+        opts.Add(("Ordina da bere per te (alcol)", () => OwnDrink(s)));
+        opts.Add(("Prendi un caffè", () => StoryTexts.Coffee));
         opts.Add(("Torna a casa", () => { s.RequestAdvance(); return null; }));
         opts.Add(("Lascia stare", () => null));
 
@@ -159,13 +161,22 @@ public static class BarScene
 
     static string Drink(GameState s, Villager v)
     {
-        int n = Bump($"drink_{v.Id}_{s.Day}");
-        if (n < 2) // l'alcol fa sparire il marchio: a lui e al protagonista
-        {
-            v.EatenToday.Add(FoodKind.Alcohol);
-            s.Protagonist?.EatenToday.Add(FoodKind.Alcohol);
-        }
+        string key = $"drink_{v.Id}_{s.Day}";
+        counters.TryGetValue(key, out int n);
+        if (n >= 2) return StoryTexts.Drink(n, Story.Act(s.Day), v.Name);
+        int cost = GlobalConfig.Instance.barRoundCost;
+        if (!s.Money.CanAfford(cost)) return StoryTexts.NoMoney;
+        s.Money.Spend(cost);
+        counters[key] = n + 1;
+        v.EatenToday.Add(FoodKind.Alcohol); // l'alcol toglie il marchio a lui; tu offri e basta
         return StoryTexts.Drink(n, Story.Act(s.Day), v.Name);
+    }
+
+    static string OwnDrink(GameState s)
+    {
+        if (Bump($"own_{s.Day}") >= 2) return StoryTexts.OwnDrinkEnough;
+        s.Protagonist?.EatenToday.Add(FoodKind.Alcohol);
+        return StoryTexts.OwnDrink(Story.Act(s.Day));
     }
 
     // ---------------------------------------------------------------- Vittorio

@@ -149,8 +149,16 @@ public static class StoryTexts
         string mood = act == 1 ? "Un bicchiere in due non fa male a nessuno."
                     : act == 2 ? "Il secondo bicchiere è sempre più facile del primo."
                     : "Bevete per non ascoltare il silenzio.";
-        return $"Versi da bere a {name} e a te. Brindate senza dire niente. {mood}\n\nPer un attimo ti pare di stare meglio. Poi il bicchiere è vuoto, e il vuoto è sempre quello.";
+        return $"Fai portare da bere a {name} e paghi tu. Lui alza il bicchiere verso di te. {mood}\n\nPer un attimo gli pare di stare meglio. Poi il bicchiere è vuoto, e il vuoto è sempre quello.";
     }
+
+    public const string NoMoney = "Frughi nelle tasche: non hai abbastanza lire per offrire un giro.";
+    public const string Coffee = "Ordini un caffè. È amaro e bollente, e ti tiene sveglio. Va bene così.";
+    public const string OwnDrinkEnough = "Il bicchiere resta sul banco. Per stasera hai bevuto abbastanza.";
+    public static string OwnDrink(int act) =>
+        act == 1 ? "Ordini un bicchiere di rosso. Un bicchiere non ha mai fatto male a nessuno."
+        : act == 2 ? "Ordini un altro bicchiere. La mano non trema, ma hai smesso di contarli."
+        : "Ordini da bere. Il bicchiere è l'unica cosa, qui dentro, che non ti guarda.";
 
     public static string LookMark(string name) =>
         $"Aspetti che {name} si volti verso la lampada. Sotto i capelli, sulla fronte, ci sono simboli sottili come graffi. Ne copi uno sul tovagliolo senza sapere perché. Trovi un altro pezzo della scritta.";

@@ -50,6 +50,12 @@ public class GameFlow : MonoBehaviour
         float hour = cfg.currentHour + cfg.currentMinute / 60f;
         if (s.Phase == GamePhase.ShopMorning && hour >= cfg.lunchCloseTime) Next();
         else if (s.Phase == GamePhase.ShopAfternoon && hour >= cfg.eveningCloseTime) Next();
+        else if (s.Phase == GamePhase.Bar)
+        {
+            TimeManager.Paused = UIKit.MenuOpen; // nei dialoghi il tempo sta fermo
+            // ponytail: a 24:00 TimeManager riavvolge e cambia giorno; si chiude un soffio prima
+            if (hour >= Mathf.Min(cfg.barCloseTime, 23.98f)) Next();
+        }
     }
 
     static string PromptFor(GamePhase p)
@@ -96,7 +102,7 @@ public class GameFlow : MonoBehaviour
                 Teleport(WorldAnchors.HomeSpawn);
                 break;
             case GamePhase.Bar:
-                Clock(cfg.barOpenTime, true, false);
+                Clock(cfg.barOpenTime, false, false); // l'orologio corre fino alla chiusura del bar
                 cfg.isBarOpen = true;
                 Teleport(WorldAnchors.BarSpawn);
                 break;
@@ -167,8 +173,7 @@ public class GameFlow : MonoBehaviour
                 if (i == 0)
                 {
                     s.NightsDaughterAlone++;
-                    s.Protagonist.EatenToday.Add(FoodKind.Alcohol);
-                    Enter(GamePhase.Bar);
+                    Enter(GamePhase.Bar); // bere è una scelta nel menu del bar
                 }
                 else Enter(GamePhase.Night);
             });
@@ -178,13 +183,16 @@ public class GameFlow : MonoBehaviour
 
     void DoNight()
     {
+        // affitto e bollette: il saldo non va sotto zero (Spend si ferma a quanto c'è)
+        int fixedCost = s.Money.Spend(cfg.dailyRent + cfg.dailyBills);
+        UIKit.Toast($"Affitto e bollette: -{fixedCost} lire.", 5f);
         int earned = s.Money.EarnedToday, spent = s.Money.SpentToday; // Night.Resolve chiude la giornata e li azzera
         var taken = Night.Resolve(s);
         var names = taken.Where(v => v != s.Daughter && v != s.Protagonist).Select(v => v.Name).ToList();
         rollCall = names.Count == 0 ? "All'appello ci sono tutti." : "All'appello mancano: " + string.Join(", ", names) + ".";
         Blackout();
         UIKit.Choices($"Notte del giorno {s.Day}",
-            $"Incasso del giorno: {earned} lire.\nSpese: {spent} lire.\nRisparmi: {s.Money.Savings} lire.\n\nIl paese dorme.",
+            $"Incasso del giorno: {earned} lire.\nSpese: {spent} lire (di cui {fixedCost} tra affitto e bollette).\nRisparmi: {s.Money.Savings} lire.\n\nIl paese dorme.",
             new[] { "Dormi" }, _ =>
             {
                 CloseBlackout();

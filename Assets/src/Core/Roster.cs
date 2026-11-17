@@ -4,6 +4,9 @@ using System.Collections.Generic;
 /// <summary>I paesani di partenza, il protagonista e la figlia.</summary>
 public static class Roster
 {
+    /// <summary>Giorno in cui Vittorio compare al bar per la prima volta.</summary>
+    public const int ConspAppearDay = 3;
+
     /// <summary>Riempie state.Protagonist, state.Daughter e state.Villagers.</summary>
     public static void Populate(GameState state)
     {
@@ -139,6 +142,7 @@ public static class Roster
             Id = "vittorio",
             Name = "Vittorio",
             Role = "cospirazionista",
+            FirstTakeDay = ConspAppearDay + 1, // non prendibile finché non compare al bar (e la notte stessa)
             Mark = 0.3f,
             Smoker = true,
             Habits = new Dictionary<FoodKind, float>

@@ -11,6 +11,8 @@ public class Villager
     public int TakenOnDay;
     public bool Smoker;
     public bool Drinker;
+    /// <summary>Prima notte (numero del giorno) in cui può essere preso. 0 = sempre.</summary>
+    public int FirstTakeDay;
     public bool Derided;         // il protagonista l'ha avvertito ed è stato deriso
     public bool Warned;
     /// <summary>Quanto spesso compra/mangia ogni tipo (pesi relativi).</summary>
