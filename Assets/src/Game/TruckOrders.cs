@@ -24,6 +24,7 @@ public class TruckOrders : MonoBehaviour
         if (WorldAnchors.StoreroomDrop == null) { Destroy(gameObject); return; }
 
         var anchor = WorldAnchors.StoreroomDrop;
+        if (anchor == null) return;
         var registerGo = new GameObject("OrderBook");
         registerGo.transform.position = anchor.position + Vector3.up * 0.1f;
         registerGo.transform.SetParent(anchor.parent);
@@ -124,26 +125,19 @@ public class TruckOrders : MonoBehaviour
         if (phase != GamePhase.ShopMorning || GameState.Current.PendingOrder.Count == 0) return;
 
         var anchor = WorldAnchors.StoreroomDrop;
+        if (anchor == null) return;
         int spent = 0;
         foreach (var entry in new Dictionary<string, int>(GameState.Current.PendingOrder))
         {
             var p = Catalog.Get(entry.Key);
-            int unitCost = (int)(p.Cost * (1f - (p.Kind == FoodKind.Industrial ? GlobalConfig.Instance.truckDiscountIndustrial : 0f)));
-            int cost = unitCost * entry.Value;
-            int payed = GameState.Current.Money.Spend(cost);
-            int qty = (payed + unitCost - 1) / unitCost;
+            int unitCost = p == null ? 0 : (int)(p.Cost * (1f - (p.Kind == FoodKind.Industrial ? GlobalConfig.Instance.truckDiscountIndustrial : 0f)));
+            if (p == null || unitCost <= 0) continue;
+            // solo i pezzi che si possono pagare: il saldo non va sotto zero
+            int qty = Mathf.Min(entry.Value, GameState.Current.Money.Savings / unitCost);
+            int payed = GameState.Current.Money.Spend(qty * unitCost);
 
             for (int i = 0; i < qty; i++)
-            {
-                var go = new GameObject("Item");
-                go.transform.position = anchor.position + Vector3.up * 0.3f + UnityEngine.Random.insideUnitSphere * 0.1f;
-                go.AddComponent<BoxCollider>();
-                var rb = go.AddComponent<Rigidbody>();
-                rb.isKinematic = true;
-                var item = go.AddComponent<ShopItem>();
-                item.itemName = p.Name;
-                item.basePrice = (float)p.BasePrice;
-            }
+                ShopItem.Spawn(p, anchor.position + new Vector3((i % 5) * 0.25f, 0.3f + (i / 5) * 0.25f, 0f));
             spent += payed;
         }
         GameState.Current.PendingOrder.Clear();

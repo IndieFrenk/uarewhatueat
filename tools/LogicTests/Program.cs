@@ -5,7 +5,17 @@ static class Program
 {
     static int Main()
     {
-        Console.WriteLine("LogicTests: nessun test ancora.");
-        return 0;
+        try
+        {
+            RulesTests.Run();
+            DataTests.Run();
+            EndingsTests.Run();
+            return 0;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"ERRORE: {e.Message}");
+            return 1;
+        }
     }
 }

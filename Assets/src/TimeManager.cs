@@ -18,6 +18,27 @@ public class TimeManager : MonoBehaviour
     public static event Action OnBarOpenTime;
     public static event Action OnNewDay;
 
+    /// <summary>true = l'orologio non scorre (momenti di respiro: mattina, pranzo, sera, bar). Lo imposta GameFlow.</summary>
+    public static bool Paused;
+    static TimeManager instance;
+
+    /// <summary>Porta l'orologio a quest'ora (24h decimale) senza far scattare gli eventi degli orari già passati.</summary>
+    public static void SetClock(float hour)
+    {
+        var c = GlobalConfig.Instance;
+        if (c == null) return;
+        c.currentHour = Mathf.Floor(hour);
+        c.currentMinute = (hour - c.currentHour) * 60f;
+        if (instance == null) return;
+        instance.hasWokenUp = false; // scatta al prossimo frame: messaggio di sveglia
+        instance.hasNotifiedMorningOpen = hour >= c.morningOpenTime;
+        instance.hasNotifiedLunchClose = hour >= c.lunchCloseTime;
+        instance.hasNotifiedAfternoonOpen = hour >= c.afternoonOpenTime;
+        instance.hasNotifiedEveningClose = hour >= c.eveningCloseTime;
+        instance.hasNotifiedBarOpen = hour >= c.barOpenTime;
+        c.playerIsAwake = false;
+    }
+
     private bool hasWokenUp = false;
     private bool hasNotifiedMorningOpen = false;
     private bool hasNotifiedLunchClose = false;
@@ -27,6 +48,7 @@ public class TimeManager : MonoBehaviour
 
     void Start()
     {
+        instance = this;
         config = GlobalConfig.Instance;
         directionalLight = FindObjectOfType<Light>();
         
@@ -53,6 +75,7 @@ public class TimeManager : MonoBehaviour
     /// </summary>
     void UpdateTime()
     {
+        if (Paused) return;
         float realSecondsPerGameHour = 3600f / config.timeScale;
         float gameMinutesPerFrame = (Time.deltaTime / realSecondsPerGameHour) * 60f;
 
