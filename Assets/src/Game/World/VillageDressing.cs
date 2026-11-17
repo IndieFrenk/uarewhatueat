@@ -18,7 +18,7 @@ public static class VillageDressing
     internal static readonly Color[] Roofs = { new Color(.5f, .25f, .2f), new Color(.42f, .22f, .18f), new Color(.35f, .3f, .3f) };
 
     static System.Random rnd;
-    static Transform signs;
+    static Transform signs, models;
     static readonly List<Vector3> taken = new List<Vector3>(); // x, z, raggio: dove non piantare alberi
 
     public static void Build()
@@ -26,6 +26,7 @@ public static class VillageDressing
         rnd = new System.Random(1990);
         taken.Clear();
         signs = WorldBuilder.Group("Insegne"); // fuori dai gruppi combinati: TextMesh
+        models = WorldBuilder.Group("Modelli"); // modelli .obj (Resources/Models/v3): non combinati, mesh non leggibili
         var fac = WorldBuilder.Group("Facciate");
         var arr = WorldBuilder.Group("Arredo");
         Barriere(arr);
@@ -360,6 +361,7 @@ public static class VillageDressing
     // Chiesa: facciata a capanna sul lato sud della piazza (z=-25), campanile con orologio a sinistra, guglia a gradini.
     static void Chiesa(Transform p)
     {
+        if (WorldBuilder.Model("chiesa", models, V(3, 0, -25), 0, 1, true) != null) return; // facciata a z=-25, collider dai bounds
         var wall = new Color(.82f, .8f, .72f);
         var g = House(p, V(3, 0, -33), 0, 10, 16, 7, wall, Roofs[1], wins: false, ridgeZ: true, chim: false);
         C(g, V(0, 1.8f, 8.03f), V(2.4f, 3.6f, .12f), WoodD);
@@ -402,12 +404,15 @@ public static class VillageDressing
 
         // fontana (fuori dalla linea ingresso negozio - porte di casa e bar)
         var f = G(p, "Fontana", 5, 0, -15);
-        C(f, V(0, .25f, 0), V(4.6f, .25f, 4.6f), Stone, null, false, PrimitiveType.Cylinder);
-        C(f, V(0, .53f, 0), V(3.9f, .03f, 3.9f), new Color(.25f, .42f, .5f), null, false, PrimitiveType.Cylinder);
-        C(f, V(0, 1.1f, 0), V(.7f, .6f, .7f), Stone, null, false, PrimitiveType.Cylinder);
-        C(f, V(0, 1.7f, 0), V(1.9f, .1f, 1.9f), Stone, null, false, PrimitiveType.Cylinder);
-        C(f, V(0, 1.8f, 0), V(1.6f, .02f, 1.6f), new Color(.25f, .42f, .5f), null, false, PrimitiveType.Cylinder);
-        C(f, V(0, 2.2f, 0), V(.45f, .45f, .45f), Stone, null, false, PrimitiveType.Sphere);
+        if (WorldBuilder.Model("fontana", models, V(5, 0, -15)) == null)
+        {
+            C(f, V(0, .25f, 0), V(4.6f, .25f, 4.6f), Stone, null, false, PrimitiveType.Cylinder);
+            C(f, V(0, .53f, 0), V(3.9f, .03f, 3.9f), new Color(.25f, .42f, .5f), null, false, PrimitiveType.Cylinder);
+            C(f, V(0, 1.1f, 0), V(.7f, .6f, .7f), Stone, null, false, PrimitiveType.Cylinder);
+            C(f, V(0, 1.7f, 0), V(1.9f, .1f, 1.9f), Stone, null, false, PrimitiveType.Cylinder);
+            C(f, V(0, 1.8f, 0), V(1.6f, .02f, 1.6f), new Color(.25f, .42f, .5f), null, false, PrimitiveType.Cylinder);
+            C(f, V(0, 2.2f, 0), V(.45f, .45f, .45f), Stone, null, false, PrimitiveType.Sphere);
+        }
         Blocker(f, V(0, .5f, 0), V(4.6f, 1f, 4.6f));
 
         // monumento ai caduti
@@ -423,26 +428,32 @@ public static class VillageDressing
         foreach (var b in new[] { V(-1, -21.5f, 0), V(8, -21.5f, 0), V(22.5f, -17, 270), V(-13.5f, -18, 90), V(-12, -3, 180), V(10, -3, 180) })
         {
             var g = G(p, "Panchina", b.x, 0, b.y, b.z);
-            C(g, V(0, .45f, 0), V(1.8f, .08f, .5f), WoodL);
-            C(g, V(0, .8f, -.24f), V(1.8f, .5f, .06f), WoodL, E(-8, 0, 0));
-            foreach (int s in new[] { -1, 1 }) C(g, V(s * .8f, .22f, 0), V(.08f, .45f, .45f), Dark);
+            if (WorldBuilder.Model("panchina", models, V(b.x, 0, b.y), b.z, 1, false, true) == null)
+            {
+                C(g, V(0, .45f, 0), V(1.8f, .08f, .5f), WoodL);
+                C(g, V(0, .8f, -.24f), V(1.8f, .5f, .06f), WoodL, E(-8, 0, 0));
+                foreach (int s in new[] { -1, 1 }) C(g, V(s * .8f, .22f, 0), V(.08f, .45f, .45f), Dark);
+            }
             Blocker(g, V(0, .45f, 0), V(1.8f, .9f, .6f));
         }
 
         // cabina telefonica SIP: telaio, pannelli, vetri, apparecchio, tettuccio
         var c = G(p, "CabinaSIP", 22.5f, 0, -3.6f, 180);
         var sip = new Color(.4f, .45f, .43f);
-        foreach (int s in new[] { -1, 1 }) foreach (int t in new[] { -1, 1 }) C(c, V(s * .5f, 1.15f, t * .5f), V(.07f, 2.3f, .07f), sip);
-        C(c, V(0, 2.35f, 0), V(1.15f, .12f, 1.15f), sip);
-        C(c, V(0, .45f, -.48f), V(1, .9f, .04f), sip);
-        foreach (int s in new[] { -1, 1 })
+        if (WorldBuilder.Model("cabina_telefonica", models, V(22.5f, 0, -3.6f), 180, 1, false, true) == null)
         {
-            C(c, V(s * .48f, .45f, 0), V(.04f, .9f, 1), sip);
-            C(c, V(s * .48f, 1.5f, 0), V(.03f, 1.3f, .92f), new Color(.5f, .65f, .7f), null, true);
+            foreach (int s in new[] { -1, 1 }) foreach (int t in new[] { -1, 1 }) C(c, V(s * .5f, 1.15f, t * .5f), V(.07f, 2.3f, .07f), sip);
+            C(c, V(0, 2.35f, 0), V(1.15f, .12f, 1.15f), sip);
+            C(c, V(0, .45f, -.48f), V(1, .9f, .04f), sip);
+            foreach (int s in new[] { -1, 1 })
+            {
+                C(c, V(s * .48f, .45f, 0), V(.04f, .9f, 1), sip);
+                C(c, V(s * .48f, 1.5f, 0), V(.03f, 1.3f, .92f), new Color(.5f, .65f, .7f), null, true);
+            }
+            C(c, V(0, 1.5f, -.48f), V(.92f, 1.3f, .03f), new Color(.5f, .65f, .7f), null, true);
+            C(c, V(0, 1.3f, -.4f), V(.3f, .4f, .15f), Dark);
+            C(c, V(0, 2.1f, .5f), V(1, .25f, .05f), new Color(.9f, .75f, .15f));
         }
-        C(c, V(0, 1.5f, -.48f), V(.92f, 1.3f, .03f), new Color(.5f, .65f, .7f), null, true);
-        C(c, V(0, 1.3f, -.4f), V(.3f, .4f, .15f), Dark);
-        C(c, V(0, 2.1f, .5f), V(1, .25f, .05f), new Color(.9f, .75f, .15f));
         Blocker(c, V(0, 1.15f, 0), V(1.1f, 2.3f, 1.1f));
 
         // bacheca con manifesti
