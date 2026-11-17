@@ -262,7 +262,7 @@ public static class WorldBuilder
         {
             if (lit == null) lit = Shader.Find("Universal Render Pipeline/Lit");
             m = new Material(lit) { color = c };
-            if (emit) { m.EnableKeyword("_EMISSION"); m.SetColor("_EmissionColor", c * 2f); emissiveMats.Add((m, c * 2f)); }
+            if (emit) { m.EnableKeyword("_EMISSION"); m.SetColor("_EmissionColor", c * 2f); if (c == VillageDressing.Lit) emissiveMats.Add((m, c * 2f)); } // solo finestre: luci interne, insegne e lampioni restano accesi
             mats[(c, emit)] = m;
         }
         return m;
