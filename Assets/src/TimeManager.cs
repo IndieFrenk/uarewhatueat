@@ -50,7 +50,11 @@ public class TimeManager : MonoBehaviour
     {
         instance = this;
         config = GlobalConfig.Instance;
-        directionalLight = FindFirstObjectByType<Light>();
+        // il sole è la luce direzionale: FindFirstObjectByType<Light>() prendeva una luce del negozio e il sole restava sempre al massimo
+        directionalLight = RenderSettings.sun;
+        if (directionalLight == null)
+            foreach (var l in FindObjectsByType<Light>(FindObjectsSortMode.None))
+                if (l.type == LightType.Directional) { directionalLight = l; break; }
         
         if (directionalLight == null)
         {

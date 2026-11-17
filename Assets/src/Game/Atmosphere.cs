@@ -14,12 +14,21 @@ public class Atmosphere : MonoBehaviour
     private float nextFlickerInterval;
     private AudioSource audioSource;
     private Color dayFogColor;
+    private Material skyMat;
+    private float dayExposure;
 
     void Start()
     {
         cfg = GlobalConfig.Instance;
         RenderSettings.fog = true;
         dayFogColor = RenderSettings.fogColor;
+        // copia in memoria: così di notte si scurisce il cielo senza toccare l'asset
+        if (RenderSettings.skybox != null && RenderSettings.skybox.HasProperty("_Exposure"))
+        {
+            skyMat = new Material(RenderSettings.skybox);
+            RenderSettings.skybox = skyMat;
+            dayExposure = skyMat.GetFloat("_Exposure");
+        }
 
         // Iscriviti agli eventi
         if (GameState.Current != null)
@@ -68,9 +77,11 @@ public class Atmosphere : MonoBehaviour
         float deep = fogIntensity * fogIntensity;
         float max = cfg.fogDensityMax + cfg.nightFogExtra * deep + dayMultiplier;
         float density = Mathf.Lerp(cfg.fogDensityMin, cfg.fogDensityMax, fogIntensity) + cfg.nightFogExtra * deep + dayMultiplier;
+        density = cfg.fogDensityMin + (density - cfg.fogDensityMin) * cfg.nightFogScale; // più nebbia = meno leggibile: la scala la tiene a bada
         RenderSettings.fogDensity = Mathf.Clamp(density, cfg.fogDensityMin, max);
         RenderSettings.fogColor = Color.Lerp(dayFogColor, cfg.nightFogColor, fogIntensity);
         RenderSettings.ambientIntensity = Mathf.Lerp(1f, cfg.nightAmbientIntensity, fogIntensity);
+        if (skyMat != null) skyMat.SetFloat("_Exposure", Mathf.Lerp(dayExposure, dayExposure * cfg.nightSkyExposure, fogIntensity));
     }
 
     void UpdateShopLights()

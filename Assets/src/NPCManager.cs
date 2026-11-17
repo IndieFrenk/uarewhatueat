@@ -41,6 +41,9 @@ public class NPCManager : MonoBehaviour
             var go = WorldAnchors.Register.gameObject;
             if (go.GetComponent<Collider>() == null) go.AddComponent<BoxCollider>().isTrigger = true;
             go.AddComponent<CashRegister>().mgr = this;
+            // dal lato banco l'unico collider che il raggio vede è la cassa: anche lei batte lo scontrino (il trigger davanti è coperto dal cliente stesso)
+            var cassa = go.transform.parent != null ? go.transform.parent.Find("Ostacolo3") : null;
+            if (cassa != null && cassa.GetComponent<CashRegister>() == null) cassa.gameObject.AddComponent<CashRegister>().mgr = this;
         }
 
         if (!Open) { nextSpawn = 0; return; }
@@ -212,6 +215,7 @@ public class Customer : Interactable
     {
         var cfg = GlobalConfig.Instance;
         var spots = WorldAnchors.ShelfSpots;
+        if (WorldAnchors.ShopSpawn != null) yield return Walk(WorldAnchors.ShopSpawn.position); // prima dal varco della porta, non attraverso il muro
         if (spots != null && spots.Length > 0)
         {
             int visits = Mathf.Min(spots.Length, NPCManager.RInt(1, 4));
@@ -248,6 +252,7 @@ public class Customer : Interactable
     {
         leaving = true;
         mgr.Queue.Remove(this);
+        if (WorldAnchors.ShopSpawn != null) yield return Walk(WorldAnchors.ShopSpawn.position);
         yield return Walk(WorldAnchors.ShopEntrance.position);
         Destroy(gameObject);
     }
