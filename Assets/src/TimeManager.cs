@@ -50,7 +50,7 @@ public class TimeManager : MonoBehaviour
     {
         instance = this;
         config = GlobalConfig.Instance;
-        directionalLight = FindObjectOfType<Light>();
+        directionalLight = FindFirstObjectByType<Light>();
         
         if (directionalLight == null)
         {
