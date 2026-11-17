@@ -1,8 +1,8 @@
-Utilizza solo sonnet boocca qualunque altro agent
+Agenti: schema piramidale. Max 4 Sonnet (task a effort alto), 6 Haiku (effort basso), 1 Opus che rivede i commit e mergia le PR su master. Nessun altro tipo di agent.
 
 # Il gioco
 
-Gestionale di un supermercato in prima persona (Unity 6, HDRP) con un tocco di horror.
+Gestionale di un supermercato in prima persona (Unity 6, URP) con un tocco di horror.
 
 - Di giorno si gestisce il negozio: scaffali, prezzi, clienti, cassa. Di sera c'è il bar.
 - L'horror è un tocco, non il genere principale: tensione e inquietudine crescono dentro la routine del gestionale (notte, luci, NPC strani), senza trasformare il gioco in un survival.
