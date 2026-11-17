@@ -2,8 +2,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Veste la piazza (solo primitive): facciate e arredo. Il "Fuori" (rilievo, edifici, strade, bosco) lo costruisce Canolo.
-/// Tutto statico e senza collider, tranne l'arredo che il giocatore può urtare e le barriere invisibili sopra i muretti.
+/// Veste la piazza: facciate e arredo sono modelli .obj di Resources/Models/v5 (design/modelli-3d/strumenti/genera_v5.py); dove un modello manca
+/// resta la vecchia primitiva (fallback). Il "Fuori" (rilievo, edifici, strade, bosco) lo costruisce Canolo.
+/// Tutto statico e senza collider, tranne l'arredo che il giocatore può urtare (collider dai bounds del modello) e le barriere invisibili sopra i muretti.
 /// Si chiama in fondo a WorldBuilder.Build(); usa Box/Mat/Group/Lamp di WorldBuilder (cache materiali condivisa).
 /// Stima draw call: ~40 materiali, gruppi combinati con StaticBatchingUtility (Facciate, Arredo) + insegne + Canolo.
 /// </summary>
@@ -19,6 +20,7 @@ public static class VillageDressing
 
     static System.Random rnd;
     static Transform signs, models;
+    static bool pavOk; // il modello del selciato c'è: niente lastre e marciapiedi a primitive
     static readonly List<Vector3> taken = new List<Vector3>(); // x, z, raggio: dove non piantare alberi
 
     public static void Build()
@@ -27,6 +29,7 @@ public static class VillageDressing
         taken.Clear();
         signs = WorldBuilder.Group("Insegne"); // fuori dai gruppi combinati: TextMesh
         models = WorldBuilder.Group("Modelli"); // modelli .obj (Resources/Models/v3): non combinati, mesh non leggibili
+        pavOk = V5("pavimento_piazza", V(5, 0, -12)) != null;
         var fac = WorldBuilder.Group("Facciate");
         var arr = WorldBuilder.Group("Arredo");
         Barriere(arr);
@@ -58,6 +61,45 @@ public static class VillageDressing
         t.localPosition = V(x, y, z);
         t.localRotation = E(0, yaw, 0);
         return t;
+    }
+
+    // Istanzia Resources/Models/v5/<name> in "Modelli" (pos e yaw nel mondo). Convenzione dei modelli: fronte verso +z locale (yaw 90 = fronte verso +x,
+    // 180 = verso -z, 270 = verso -x), pivot al centro del fronte a terra (edifici) o al centro in pianta (arredo). collider: BoxCollider dai bounds.
+    // Ritorna null se il modello manca: il chiamante tiene la primitiva.
+    static GameObject V5(string name, Vector3 pos, float yaw = 0, bool collider = false)
+    {
+        var prefab = Resources.Load<GameObject>("Models/v5/" + name);
+        if (prefab == null) return null;
+        var g = Object.Instantiate(prefab, models, false);
+        g.name = name;
+        foreach (var c in g.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(c);
+        g.transform.localPosition = pos;
+        g.transform.localRotation = E(0, yaw, 0);
+        if (!collider) return g;
+        Bounds b = default;
+        bool any = false;
+        foreach (var mf in g.GetComponentsInChildren<MeshFilter>())
+        {
+            if (mf.sharedMesh == null) continue;
+            var mb = mf.sharedMesh.bounds;
+            for (int i = 0; i < 8; i++)
+            {
+                var corner = mb.center + Vector3.Scale(mb.extents, new Vector3(i & 1, (i >> 1) & 1, (i >> 2) & 1) * 2 - Vector3.one);
+                var q = g.transform.InverseTransformPoint(mf.transform.TransformPoint(corner));
+                if (any) b.Encapsulate(q); else { b = new Bounds(q, Vector3.zero); any = true; }
+            }
+        }
+        if (any) { var bc = g.AddComponent<BoxCollider>(); bc.center = b.center; bc.size = b.size; }
+        return g;
+    }
+
+    // Il modello veste un box di WorldBuilder (EdificioCasa/EdificioBar) e la sua porta di gioco: restano come collider e interazione, ma non si vedono.
+    static void HideBox(string boxName, string doorLabel)
+    {
+        var box = GameObject.Find(boxName);
+        if (box != null && box.TryGetComponent<Renderer>(out var r)) r.enabled = false;
+        foreach (var d in Object.FindObjectsByType<Door>(FindObjectsSortMode.None))
+            if (d.label == doorLabel && d.TryGetComponent<Renderer>(out var dr)) dr.enabled = false;
     }
 
     // Ingombro invisibile (collider) in coordinate locali di p.
@@ -203,36 +245,56 @@ public static class VillageDressing
     static void Facciate(Transform p)
     {
         // marciapiedi tra i muretti e le facciate (nord e sud)
-        C(p, V(5, -.25f, 1), V(42, .5f, 1.6f), Paving);
-        C(p, V(5, -.25f, -24.9f), V(42, .5f, 1.4f), Paving);
+        if (!pavOk)
+        {
+            C(p, V(5, -.25f, 1), V(42, .5f, 1.6f), Paving);
+            C(p, V(5, -.25f, -24.9f), V(42, .5f, 1.4f), Paving);
+        }
 
         // casa e bar: tetto, finestre, balconi, insegna sugli edifici esistenti (la porta resta dov'è)
-        var casa = House(p, V(-10, 0, -10), 90, 8, 8, 6, new Color(.7f, .6f, .5f), Roofs[0], body: false);
-        Sign(casa, "CASA", V(0, 3f, 4.1f), 2f, WoodD, Cream, .6f);
-        var bar = House(p, V(20, 0, -10), 270, 8, 8, 6, new Color(.5f, .35f, .3f), Roofs[1], body: false);
-        Awning(bar, 0, 2.65f, 4, 4f, new Color(.15f, .3f, .5f), Cream);
-        Sign(bar, "BAR SPORT", V(0, 3.4f, 4.1f), 5.5f, new Color(.45f, .08f, .08f), Cream, 1f);
+        // (modelli v5: fronte sul piano della facciata, porta al centro dove c'è la porta di gioco; il box resta come collider)
+        if (V5("casa_piazza", V(-6, 0, -10), 90) != null) HideBox("EdificioCasa", "Entra in casa");
+        else
+        {
+            var casa = House(p, V(-10, 0, -10), 90, 8, 8, 6, new Color(.7f, .6f, .5f), Roofs[0], body: false);
+            Sign(casa, "CASA", V(0, 3f, 4.1f), 2f, WoodD, Cream, .6f);
+        }
+        if (V5("bar_piazza", V(16, 0, -10), 270) != null) HideBox("EdificioBar", "Entra al bar");
+        else
+        {
+            var bar = House(p, V(20, 0, -10), 270, 8, 8, 6, new Color(.5f, .35f, .3f), Roofs[1], body: false);
+            Awning(bar, 0, 2.65f, 4, 4f, new Color(.15f, .3f, .5f), Cream);
+            Sign(bar, "BAR SPORT", V(0, 3.4f, 4.1f), 5.5f, new Color(.45f, .08f, .08f), Cream, 1f);
+        }
 
         Bottega(p);
 
-        // fila nord (facce a sud, facciata a z=1,8)
-        var mac = Shop(p, V(-9, 0, 5.8f), 180, 12, 8, 6.5f, new Color(.82f, .7f, .64f), Roofs[0], "MACELLERIA", new Color(.45f, .1f, .1f), Cream, Red, Cream);
-        var fio = Shop(p, V(12, 0, 5.8f), 180, 8, 8, 6.5f, new Color(.7f, .78f, .65f), Roofs[2], "FIORI", new Color(.15f, .35f, .2f), Cream, new Color(.2f, .45f, .25f), Cream);
-        Shop(p, V(21.5f, 0, 5.8f), 180, 8, 8, 6.5f, new Color(.85f, .78f, .6f), Roofs[1], "TABACCHI", new Color(.12f, .12f, .2f), Cream, new Color(.15f, .3f, .5f), Cream);
-        // macelleria: bancone di marmo con panni rossi; fioraio: bancale con vasi e piante
-        C(p, V(-9, .45f, 1), V(4, .9f, .55f), Cream);
-        C(p, V(-9, .92f, 1), V(4.1f, .05f, .6f), Red);
-        C(p, V(12, .25f, 1), V(7, .5f, .8f), WoodL);
-        for (int i = 0; i < 7; i++) Pot(p, 8.9f + i, .5f, 1f, .42f);
-        foreach (float x in new[] { 8.3f, 15.7f }) Pot(p, x, 0, 1f, .8f);
+        // fila nord (facce a sud, facciata a z=1,8): modelli v5 col fronte a z=1,8 (yaw 180); macelleria col bancone di marmo, fioraio coi vasi sul bancale
+        if (V5("macelleria", V(-9, 0, 1.8f), 180) == null)
+        {
+            Shop(p, V(-9, 0, 5.8f), 180, 12, 8, 6.5f, new Color(.82f, .7f, .64f), Roofs[0], "MACELLERIA", new Color(.45f, .1f, .1f), Cream, Red, Cream);
+            C(p, V(-9, .45f, 1), V(4, .9f, .55f), Cream);
+            C(p, V(-9, .92f, 1), V(4.1f, .05f, .6f), Red);
+        }
+        if (V5("fioraio", V(12, 0, 1.8f), 180) == null)
+        {
+            Shop(p, V(12, 0, 5.8f), 180, 8, 8, 6.5f, new Color(.7f, .78f, .65f), Roofs[2], "FIORI", new Color(.15f, .35f, .2f), Cream, new Color(.2f, .45f, .25f), Cream);
+            C(p, V(12, .25f, 1), V(7, .5f, .8f), WoodL);
+            for (int i = 0; i < 7; i++) Pot(p, 8.9f + i, .5f, 1f, .42f);
+            foreach (float x in new[] { 8.3f, 15.7f }) Pot(p, x, 0, 1f, .8f);
+        }
+        if (V5("tabacchi", V(21.5f, 0, 1.8f), 180) == null)
+            Shop(p, V(21.5f, 0, 5.8f), 180, 8, 8, 6.5f, new Color(.85f, .78f, .6f), Roofs[1], "TABACCHI", new Color(.12f, .12f, .2f), Cream, new Color(.15f, .3f, .5f), Cream);
 
         // fila sud: chiesa al centro, osteria a destra, canonica a sinistra
         Chiesa(p);
-        Shop(p, V(18, 0, -30.1f), 0, 12, 9, 6.5f, new Color(.8f, .7f, .55f), Roofs[1], "OSTERIA", new Color(.3f, .2f, .12f), Cream, Red, Cream);
-        House(p, V(-12.5f, 0, -29.6f), 0, 7, 8, 6.5f, Walls[0], Roofs[2]);
+        if (V5("osteria", V(18, 0, -25.6f), 0) == null)
+            Shop(p, V(18, 0, -30.1f), 0, 12, 9, 6.5f, new Color(.8f, .7f, .55f), Roofs[1], "OSTERIA", new Color(.3f, .2f, .12f), Cream, Red, Cream);
+        if (V5("canonica", V(-12.5f, 0, -25.6f), 0) == null) House(p, V(-12.5f, 0, -29.6f), 0, 7, 8, 6.5f, Walls[0], Roofs[2]);
         for (int i = 0; i < 3; i++) // tavolini fuori dall'osteria
         {
             float x = 14 + i * 3.5f;
+            if (V5("tavolino_osteria", V(x, 0, -24.9f)) != null) continue;
             C(p, V(x, .36f, -24.9f), V(.08f, .72f, .08f), WoodD);
             C(p, V(x, .73f, -24.9f), V(.8f, .04f, .8f), WoodL, null, false, PrimitiveType.Cylinder);
             foreach (int s in new[] { -1, 1 }) C(p, V(x + s * .6f, .25f, -24.9f), V(.35f, .5f, .35f), WoodD);
@@ -245,6 +307,8 @@ public static class VillageDressing
     // Coordinate locali del gruppo (yaw 180): +z guarda la piazza, lx = 3 - x mondo, lz = 6 - z mondo; la porta sta a lx 0..1.
     static void Bottega(Transform p)
     {
+        // modello v5: guscio 6,9 x 12,9 col varco a x 2,5..3,57 (modello centrato a x 3, fronte a z -0,45, yaw 180; la x del modello si specchia in Unity)
+        if (V5("bottega", V(3, 0, -.45f), 180) != null) { taken.Add(V(3, 6, 12)); return; }
         var keep = rnd;
         rnd = new System.Random(5); // le finestre accese non spostano la sequenza casuale del resto del paese
         const float W = 6.9f, D = 12.9f, Ht = 6.3f, T = .25f;
@@ -398,7 +462,7 @@ public static class VillageDressing
     {
         // pavimentazione: lastre 2,8 m di quattro grigi su fughe scure (il Suolo)
         var shades = new[] { new Color(.5f, .48f, .44f), new Color(.46f, .44f, .41f), new Color(.52f, .5f, .46f), new Color(.43f, .42f, .4f) };
-        for (int i = 0; i < 14; i++)
+        for (int i = 0; i < 14 && !pavOk; i++)
             for (int j = 0; j < 8; j++)
                 C(p, V(-14.3f + 3 * i, .015f, -1.5f - 3 * j), V(2.8f, .03f, 2.8f), shades[rnd.Next(4)]);
 
@@ -416,13 +480,16 @@ public static class VillageDressing
         Blocker(f, V(0, .5f, 0), V(4.6f, 1f, 4.6f));
 
         // monumento ai caduti
-        var m = G(p, "Monumento", -9.5f, 0, -19.5f);
-        var sc = new Color(.7f, .68f, .62f);
-        for (int i = 0; i < 3; i++) C(m, V(0, .15f + i * .3f, 0), V(3.4f - i * .6f, .3f, 3.4f - i * .6f), sc);
-        C(m, V(0, 2.7f, 0), V(.9f, 3.6f, .9f), sc);
-        C(m, V(0, 4.7f, 0), V(.6f, .6f, .6f), sc, E(0, 45, 0));
-        C(m, V(0, 2.2f, .47f), V(.65f, .9f, .04f), Dark);
-        Blocker(m, V(0, 1.5f, 0), V(3.4f, 3f, 3.4f));
+        if (V5("monumento", V(-9.5f, 0, -19.5f), 0, true) == null)
+        {
+            var m = G(p, "Monumento", -9.5f, 0, -19.5f);
+            var sc = new Color(.7f, .68f, .62f);
+            for (int i = 0; i < 3; i++) C(m, V(0, .15f + i * .3f, 0), V(3.4f - i * .6f, .3f, 3.4f - i * .6f), sc);
+            C(m, V(0, 2.7f, 0), V(.9f, 3.6f, .9f), sc);
+            C(m, V(0, 4.7f, 0), V(.6f, .6f, .6f), sc, E(0, 45, 0));
+            C(m, V(0, 2.2f, .47f), V(.65f, .9f, .04f), Dark);
+            Blocker(m, V(0, 1.5f, 0), V(3.4f, 3f, 3.4f));
+        }
 
         // panchine: sedile, schienale, due fianchi in ghisa
         foreach (var b in new[] { V(-1, -21.5f, 0), V(8, -21.5f, 0), V(22.5f, -17, 270), V(-13.5f, -18, 90), V(-12, -3, 180), V(10, -3, 180) })
@@ -457,29 +524,35 @@ public static class VillageDressing
         Blocker(c, V(0, 1.15f, 0), V(1.1f, 2.3f, 1.1f));
 
         // bacheca con manifesti
-        var bk = G(p, "Bacheca", -13.5f, 0, -4.5f, 90);
-        foreach (int s in new[] { -1, 1 }) C(bk, V(s * 1f, 1f, 0), V(.1f, 2f, .1f), WoodD);
-        C(bk, V(0, 1.5f, 0), V(2.2f, 1.2f, .08f), WoodL);
-        C(bk, V(0, 2.2f, 0), V(2.5f, .1f, .35f), WoodD);
-        var pc = new[] { Cream, new Color(.8f, .7f, .35f), new Color(.7f, .3f, .25f), new Color(.8f, .8f, .85f) };
-        for (int i = 0; i < 6; i++) C(bk, V(-.8f + (i % 3) * .8f, 1.2f + (i / 3) * .55f, .05f), V(.55f, .45f, .02f), pc[rnd.Next(4)], E(0, 0, (float)(rnd.NextDouble() * 8 - 4)));
-        Blocker(bk, V(0, 1.1f, 0), V(2.4f, 2.2f, .4f));
+        if (V5("bacheca", V(-13.5f, 0, -4.5f), 90, true) == null)
+        {
+            var bk = G(p, "Bacheca", -13.5f, 0, -4.5f, 90);
+            foreach (int s in new[] { -1, 1 }) C(bk, V(s * 1f, 1f, 0), V(.1f, 2f, .1f), WoodD);
+            C(bk, V(0, 1.5f, 0), V(2.2f, 1.2f, .08f), WoodL);
+            C(bk, V(0, 2.2f, 0), V(2.5f, .1f, .35f), WoodD);
+            var pc = new[] { Cream, new Color(.8f, .7f, .35f), new Color(.7f, .3f, .25f), new Color(.8f, .8f, .85f) };
+            for (int i = 0; i < 6; i++) C(bk, V(-.8f + (i % 3) * .8f, 1.2f + (i / 3) * .55f, .05f), V(.55f, .45f, .02f), pc[rnd.Next(4)], E(0, 0, (float)(rnd.NextDouble() * 8 - 4)));
+            Blocker(bk, V(0, 1.1f, 0), V(2.4f, 2.2f, .4f));
+        }
 
         // fioriere: ai lati dell'ingresso del negozio, della casa e del bar
         foreach (var q in new[] { V(.8f, -1, 0), V(4.2f, -1, 0), V(-6.7f, -6.5f, 90), V(-6.7f, -13.5f, 90), V(16.7f, -6.5f, 90), V(16.7f, -13.5f, 90) })
-            Planter(p, q.x, q.y, 1.1f, q.z);
+            if (V5("fioriera", V(q.x, 0, q.y), q.z, true) == null) Planter(p, q.x, q.y, 1.1f, q.z);
 
         // utilitaria vecchia, parcheggiata di lato lungo il muretto sud
-        Auto(G(p, "Utilitaria", 17.5f, 0, -21.3f, 90));
+        if (V5("utilitaria", V(17.5f, 0, -21.3f), 90, true) == null) Auto(G(p, "Utilitaria", 17.5f, 0, -21.3f, 90));
 
         // cassonetti
-        var cs = G(p, "Cassonetti", -15f, 0, -21.5f, 90);
-        foreach (float x in new[] { -.7f, .7f })
+        if (V5("cassonetto", V(-15, 0, -22.2f), 90, true) == null || V5("cassonetto", V(-15, 0, -20.8f), 90, true) == null)
         {
-            C(cs, V(x, .55f, 0), V(1.1f, 1.1f, .9f), new Color(.2f, .45f, .25f));
-            C(cs, V(x, 1.14f, 0), V(1.15f, .08f, .95f), Dark);
+            var cs = G(p, "Cassonetti", -15f, 0, -21.5f, 90);
+            foreach (float x in new[] { -.7f, .7f })
+            {
+                C(cs, V(x, .55f, 0), V(1.1f, 1.1f, .9f), new Color(.2f, .45f, .25f));
+                C(cs, V(x, 1.14f, 0), V(1.15f, .08f, .95f), Dark);
+            }
+            Blocker(cs, V(0, .6f, 0), V(2.6f, 1.2f, .9f));
         }
-        Blocker(cs, V(0, .6f, 0), V(2.6f, 1.2f, .9f));
     }
 
     static void Planter(Transform p, float x, float z, float len, float yaw)
