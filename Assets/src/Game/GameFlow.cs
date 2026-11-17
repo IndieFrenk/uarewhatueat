@@ -85,6 +85,8 @@ public class GameFlow : MonoBehaviour
             case GamePhase.Morning:
                 Clock(cfg.wakeUpHour + cfg.wakeUpMinute / 60f, true, false);
                 Teleport(WorldAnchors.HomeSpawn);
+                UIKit.Toast($"Giorno {s.Day} di {GameState.LastDay}. {rollCall}", 8f); // prima di SetPhase: i segnali di Giulia si accodano
+                rollCall = "";
                 break;
             case GamePhase.ShopMorning: Clock(cfg.morningOpenTime, false, true); break;
             case GamePhase.Lunch: Clock(cfg.lunchCloseTime, true, false); break;
@@ -108,10 +110,6 @@ public class GameFlow : MonoBehaviour
 
         switch (p)
         {
-            case GamePhase.Morning:
-                UIKit.Toast($"Giorno {s.Day} di {GameState.LastDay}. {rollCall}", 8f);
-                rollCall = "";
-                break;
             case GamePhase.ShopMorning:
             case GamePhase.ShopAfternoon:
                 bool far = WorldAnchors.Player != null && WorldAnchors.ShopEntrance != null &&

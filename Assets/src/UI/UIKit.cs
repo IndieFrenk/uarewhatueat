@@ -42,10 +42,11 @@ public class UIKit : MonoBehaviour
     }
 
     /// <summary>Notifica in basso per qualche secondo.</summary>
-    public static void Toast(string msg, float seconds = 4f)
+    public static void Toast(string msg, float seconds = 4f, bool append = false)
     {
         Ensure();
-        I.toast.text = msg;
+        bool live = I.toast.text != "" && Time.unscaledTime <= I.toastUntil;
+        I.toast.text = append && live ? I.toast.text + "\n" + msg : msg;
         I.toastUntil = Time.unscaledTime + seconds;
     }
 
