@@ -1,0 +1,28 @@
+newmtl liscio_8c9980
+Kd 0.549 0.600 0.502
+newmtl vetro_1d2830
+Kd 0.114 0.157 0.188
+map_Kd texture/vetro.png
+newmtl liscio_f4ead0_e
+Kd 0.957 0.918 0.816
+Ke 0.957 0.918 0.816
+newmtl liscio_b02a2a
+Kd 0.690 0.165 0.165
+newmtl liscio_3a3d40
+Kd 0.227 0.239 0.251
+newmtl gomma_2a2d30
+Kd 0.165 0.176 0.188
+map_Kd texture/gomma.png
+newmtl metallo_1a1c1e
+Kd 0.102 0.110 0.118
+map_Kd texture/metallo.png
+newmtl liscio_e6e0d0
+Kd 0.902 0.878 0.816
+newmtl gomma_1b1b1b
+Kd 0.106 0.106 0.106
+map_Kd texture/gomma.png
+newmtl metallo_b8bcbf
+Kd 0.722 0.737 0.749
+map_Kd texture/metallo.png
+newmtl liscio_4f554a
+Kd 0.310 0.333 0.290

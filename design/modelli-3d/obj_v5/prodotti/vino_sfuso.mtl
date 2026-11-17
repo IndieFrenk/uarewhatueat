@@ -1,0 +1,12 @@
+newmtl vetro_6a1a1a
+Kd 0.416 0.102 0.102
+map_Kd texture/vetro.png
+newmtl cartone_c9a45c
+Kd 0.788 0.643 0.361
+map_Kd texture/cartone.png
+newmtl cartone_b89048
+Kd 0.722 0.565 0.282
+map_Kd texture/cartone.png
+newmtl legno_a88a5a
+Kd 0.659 0.541 0.353
+map_Kd texture/legno.png

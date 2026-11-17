@@ -1,0 +1,21 @@
+newmtl metallo_3a3d40
+Kd 0.227 0.239 0.251
+map_Kd texture/metallo.png
+newmtl legno_8a6a44
+Kd 0.541 0.416 0.267
+map_Kd texture/legno.png
+newmtl tessuto_b33a3a
+Kd 0.702 0.227 0.227
+map_Kd texture/tessuto.png
+newmtl vetro_3f7a3a
+Kd 0.247 0.478 0.227
+map_Kd texture/vetro.png
+newmtl vetro_d8e4e0
+Kd 0.847 0.894 0.878
+map_Kd texture/vetro.png
+newmtl legno_5a4636
+Kd 0.353 0.275 0.212
+map_Kd texture/legno.png
+newmtl legno_4a3a2c
+Kd 0.290 0.227 0.173
+map_Kd texture/legno.png

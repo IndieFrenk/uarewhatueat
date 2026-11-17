@@ -1,0 +1,11 @@
+newmtl cartone_f4c61c
+Kd 0.957 0.776 0.110
+map_Kd texture/cartone.png
+newmtl stampa_a_fff5d0
+Kd 1.000 0.961 0.816
+map_Kd texture/stampa_a.png
+newmtl stampa_b_d62828
+Kd 0.839 0.157 0.157
+map_Kd texture/stampa_b.png
+newmtl liscio_d62828
+Kd 0.839 0.157 0.157

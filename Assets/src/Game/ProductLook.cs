@@ -4,6 +4,7 @@ using UnityEngine;
 /// <summary>
 /// Aspetto dei prodotti: tabella id -> (forma, dimensioni, colori) e costruzione con sole primitive.
 /// Industriale = colori sgargianti + etichetta col nome; naturale = colori terrosi, niente etichetta.
+/// Se esiste Resources/Models/v5/prodotti/<id> (obj generati da prodotti_v5.py) si usa quello, altrimenti le primitive qui sotto.
 /// Il root ha solo il BoxCollider (misure reali del prodotto, pivot al centro); i pezzi sono figli senza collider.
 /// </summary>
 public static class ProductLook
@@ -60,6 +61,8 @@ public static class ProductLook
     /// <summary>Crea il prodotto: root con BoxCollider + pezzi visivi. pos = punto d'appoggio (base del prodotto).</summary>
     public static GameObject Build(Product p, Vector3 pos)
     {
+        var prefab = Resources.Load<GameObject>("Models/v5/prodotti/" + p.Id); // modello v5 (prodotti_v5.py), se c'e'
+        if (prefab != null) return BuildModel(p, prefab, pos);
         if (!Table.TryGetValue(p.Id, out var l)) l = Fallback;
         var root = new GameObject(p.Name);
         var box = root.AddComponent<BoxCollider>();
@@ -123,6 +126,32 @@ public static class ProductLook
                 break;
             }
         }
+        return root;
+    }
+
+    // Modello v5: in metri, base a y=0. Il collider sul root prende i bounds delle mesh (pivot al centro), il modello e' un figlio senza collider.
+    static GameObject BuildModel(Product p, GameObject prefab, Vector3 pos)
+    {
+        var root = new GameObject(p.Name);
+        var g = Object.Instantiate(prefab, root.transform, false);
+        g.name = p.Id;
+        foreach (var c in g.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(c);
+        Bounds b = default;
+        bool any = false;
+        foreach (var mf in g.GetComponentsInChildren<MeshFilter>())
+        {
+            if (mf.sharedMesh == null) continue;
+            var mb = mf.sharedMesh.bounds;
+            for (int i = 0; i < 8; i++)
+            {
+                var q = root.transform.InverseTransformPoint(mf.transform.TransformPoint(mb.center + Vector3.Scale(mb.extents, new Vector3(i & 1, (i >> 1) & 1, (i >> 2) & 1) * 2 - Vector3.one)));
+                if (any) b.Encapsulate(q); else { b = new Bounds(q, Vector3.zero); any = true; }
+            }
+        }
+        if (!any) b = new Bounds(Vector3.up * .075f, Vector3.one * .15f);
+        g.transform.localPosition = -b.center;
+        root.AddComponent<BoxCollider>().size = b.size;
+        root.transform.position = pos + Vector3.up * (b.size.y / 2f);
         return root;
     }
 
