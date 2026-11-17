@@ -8,6 +8,8 @@ using UnityEngine.Rendering;
 /// Dati in Resources/canolo_osm.json (metri locali: x est, z sud) e canolo_quote.json (griglia 81x81 non uniforme, fitta al centro).
 /// TRASFORMAZIONE OSM -> Unity: sola traslazione, niente rotazione. x_unity = x_osm + TX, z_unity = TZ - z_osm (il nord resta +z), y = quota - quota del centro piazza.
 /// Con TX=5, TZ=-1 la chiesa vera (osm -2,32) cade a (3,-33): dove sta la chiesa della piazza, sul suo lato sud.
+/// Edifici: modelli v5 (stile v4, Resources/Models/v5/canolo/b<id OSM>.obj + edifici.json con la posa, da design/modelli-3d/strumenti/canolo_v5.py), posati sul Terrain
+/// e combinati per (materiale, cella); dove il modello manca resta l'estrusione della sagoma.
 /// Tutto combinato in mesh per (materiale, cella 400 m), senza collider: il giocatore resta dentro i muretti della piazza.
 /// Dati: © OpenStreetMap contributors (ODbL); quote EU-DEM 25 m. Vedi CREDITS.md.
 /// </summary>
@@ -42,7 +44,13 @@ public static class Canolo
     static readonly Dictionary<(Material, int, int, bool), MB> meshes = new Dictionary<(Material, int, int, bool), MB>();
     static readonly List<Vector4> boxes = new List<Vector4>();   // ingombri edifici (minx, minz, maxx, maxz): niente alberi
     static readonly List<Vector3> roadPts = new List<Vector3>(); // x, z, raggio: niente alberi sulle strade
-    static int nBuild, nTrees;
+    static int nBuild, nTrees, nModels;
+    static Transform root;
+    static Dictionary<long, Pose> poses;                                   // posa dei modelli v5 per id OSM
+    static readonly Dictionary<string, Material> sharedMats = new Dictionary<string, Material>(); // un solo Material per nome: i modelli ne portano uno a testa
+    static readonly Dictionary<(Material, int, int, bool), List<CombineInstance>> placed = new Dictionary<(Material, int, int, bool), List<CombineInstance>>();
+
+    class Pose { public float cx, cz, r, w, d; public int lod; }
 
     public static void Build()
     {
@@ -50,12 +58,14 @@ public static class Canolo
         var qA = Resources.Load<TextAsset>("canolo_quote");
         if (osmA == null || qA == null) { Debug.LogError("Canolo: mancano Resources/canolo_osm.json o canolo_quote.json"); return; }
         rnd = new System.Random(1990);
-        meshes.Clear(); boxes.Clear(); roadPts.Clear(); nBuild = nTrees = 0;
+        meshes.Clear(); placed.Clear(); boxes.Clear(); roadPts.Clear(); nBuild = nTrees = nModels = 0;
         LoadGrid(qA.text);
         var osm = (Dictionary<string, object>)Mini.Parse(osmA.text);
         var water = Polys(osm, "acque", true);
         var forests = Polys(osm, "boschi", true);
         var g = WorldBuilder.Group("Canolo");
+        root = g;
+        LoadPoses();
 
         HeightMap(water);
         Terreno(g, forests);
@@ -69,7 +79,7 @@ public static class Canolo
 
         var cam = Camera.main; // il Terrain arriva a 2,5 km
         if (cam != null) cam.farClipPlane = Mathf.Max(cam.farClipPlane, 6000f);
-        Debug.Log($"Canolo: {nBuild} edifici, {nTrees} alberi, {meshes.Count} mesh combinate");
+        Debug.Log($"Canolo: {nBuild} edifici ({nModels} modelli v5), {nTrees} alberi, {meshes.Count} mesh combinate");
     }
 
     // ---------------- DATI ----------------
@@ -120,6 +130,20 @@ public static class Canolo
             r.Add(new Poly { id = (long)(double)o["id"], p = p, tag = (Dictionary<string, object>)o["tag"], bb = bb });
         }
         return r;
+    }
+
+    static void LoadPoses()
+    {
+        poses = null;
+        var a = Resources.Load<TextAsset>("Models/v5/canolo/edifici");
+        if (a == null) return;
+        poses = new Dictionary<long, Pose>();
+        var d = (Dictionary<string, object>)Mini.Parse(a.text);
+        foreach (Dictionary<string, object> o in (List<object>)d["edifici"])
+        {
+            float F(string k) => (float)(double)o[k];
+            poses[(long)(double)o["id"]] = new Pose { cx = F("cx"), cz = F("cz"), r = F("r"), w = F("w"), d = F("d"), lod = (int)F("lod") };
+        }
     }
 
     // ---------------- TERRENO ----------------
@@ -302,6 +326,20 @@ public static class Canolo
 
     static void Flush(Transform g)
     {
+        foreach (var kv in placed)
+        {
+            var mesh = new Mesh { indexFormat = IndexFormat.UInt32 };
+            mesh.CombineMeshes(kv.Value.ToArray(), true, true);
+            mesh.RecalculateBounds();
+            var go = new GameObject("Edifici");
+            go.transform.SetParent(g, false);
+            go.isStatic = true;
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var r = go.AddComponent<MeshRenderer>();
+            r.sharedMaterial = kv.Key.Item1;
+            r.shadowCastingMode = kv.Key.Item4 ? ShadowCastingMode.On : ShadowCastingMode.Off;
+        }
+        placed.Clear();
         foreach (var kv in meshes)
         {
             var b = kv.Value;
@@ -376,6 +414,7 @@ public static class Canolo
         boxes.Add(new Vector4(b.bb.xMin - 3, b.bb.yMin - 3, b.bb.xMax + 3, b.bb.yMax + 3));
         if (n < 3 || area < 6 || b.bb.Overlaps(Plaza) || b.bb.Overlaps(Rooms)) return;
         nBuild++;
+        if (TryModel(b, serra)) return;
 
         float h = serra ? 2.8f : area < 25 ? 3.2f : Mathf.Clamp(6f + 3f * Mathf.SmoothStep(0, 1, (area - 40f) / 160f) + Hash(b.id, 1) - .5f, 6f, 9f); // capanne basse
         float yb = float.MaxValue, cx = 0, cz = 0;
@@ -433,6 +472,50 @@ public static class Canolo
             var RA = new Vector3(ra.x, top, ra.y); var RC = new Vector3(rc.x, top, rc.y);
             mr.Quad(A3, C3, RC, RA, Vector3.up);
         }
+    }
+
+    // Modello v5 di questo edificio, se c'e'. Pivot = centro della sagoma a quota 0; yaw Unity = -r (vedi canolo_v5.py); la quota e' la media di angoli e centro
+    // sul Terrain, come fa lo script con le quote EU-DEM (la fondazione del modello e' piu' profonda del necessario). Niente collider.
+    static bool TryModel(Poly b, bool serra)
+    {
+        if (poses == null || !poses.TryGetValue(b.id, out var o)) return false;
+        var prefab = Resources.Load<GameObject>("Models/v5/canolo/" + (serra ? "serra_" : "b") + b.id);
+        if (prefab == null) return false;
+        float rad = o.r * Mathf.Deg2Rad, c = Mathf.Cos(rad), s = Mathf.Sin(rad);
+        float px = o.cx + TX, pz = TZ - o.cz, y = Ground(px, pz);
+        for (int k = 0; k < 4; k++)
+        {
+            float a = (k & 1) == 0 ? -o.w / 2 : o.w / 2, bb = (k & 2) == 0 ? -o.d / 2 : o.d / 2;
+            y += Ground(px + a * c + bb * s, pz - (-a * s + bb * c));
+        }
+        var pos = new Vector3(px, y / 5, pz);
+        var rot = Quaternion.Euler(0, -o.r, 0);
+        nModels++;
+        var mfs = prefab.GetComponentsInChildren<MeshFilter>();
+        bool readable = true;
+        foreach (var mf in mfs) if (mf.sharedMesh == null || !mf.sharedMesh.isReadable) readable = false;
+        if (!readable) // mesh non leggibili (importer non applicato): istanza normale
+        {
+            var inst = Object.Instantiate(prefab, root, false);
+            inst.transform.SetPositionAndRotation(pos, rot);
+            foreach (var col in inst.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(col);
+            return true;
+        }
+        var world = Matrix4x4.TRS(pos, rot, Vector3.one) * prefab.transform.worldToLocalMatrix;
+        foreach (var mf in mfs)
+        {
+            var mats = mf.GetComponent<MeshRenderer>().sharedMaterials;
+            bool shadow = o.lod < 2;
+            for (int si = 0; si < mf.sharedMesh.subMeshCount && mats.Length > 0; si++)
+            {
+                var m0 = mats[Mathf.Min(si, mats.Length - 1)];
+                if (!sharedMats.TryGetValue(m0.name, out var m)) sharedMats[m0.name] = m = m0;
+                var k = (m, Mathf.FloorToInt(px / Cell), Mathf.FloorToInt(pz / Cell), shadow);
+                if (!placed.TryGetValue(k, out var list)) placed[k] = list = new List<CombineInstance>();
+                list.Add(new CombineInstance { mesh = mf.sharedMesh, subMeshIndex = si, transform = world * mf.transform.localToWorldMatrix });
+            }
+        }
+        return true;
     }
 
     // Quadro (centro cw, semilarghezza dx, semialtezza) con la faccia verso o.
