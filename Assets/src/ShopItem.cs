@@ -37,28 +37,12 @@ public class ShopItem : MonoBehaviour
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
     }
 
-    /// <summary>Crea un prodotto segnaposto: forma e colore dipendono dal tipo.</summary>
+    /// <summary>Crea il prodotto fisico (aspetto in ProductLook). pos = punto d'appoggio.</summary>
     public static ShopItem Spawn(Product p, Vector3 pos)
     {
-        PrimitiveType shape = PrimitiveType.Cube;
-        Vector3 size = new Vector3(0.18f, 0.18f, 0.18f);
-        Color color = new Color(0.3f, 0.75f, 0.3f); // naturale: verde
-        if (p.Kind == FoodKind.Alcohol) { shape = PrimitiveType.Cylinder; size = new Vector3(0.07f, 0.13f, 0.07f); color = new Color(0.4f, 0.22f, 0.1f); }
-        else if (p.Kind == FoodKind.Tobacco) { size = new Vector3(0.08f, 0.12f, 0.03f); color = Color.white; }
-        else if (p.Sweet) { size = new Vector3(0.14f, 0.14f, 0.14f); color = new Color(1f, 0.6f, 0.75f); }
-        else if (p.Kind == FoodKind.Industrial)
-        {
-            shape = PrimitiveType.Cylinder; size = new Vector3(0.1f, 0.1f, 0.1f);
-            color = (p.Id.GetHashCode() & 1) == 0 ? new Color(0.85f, 0.15f, 0.15f) : new Color(0.95f, 0.8f, 0.15f);
-        }
-
-        var go = GameObject.CreatePrimitive(shape);
-        go.name = p.Name;
-        go.transform.localScale = size;
-        go.GetComponent<Renderer>().material.color = color;
+        var go = ProductLook.Build(p, pos); // aspetto per prodotto; root con BoxCollider, pivot al centro
         int layer = LayerMask.NameToLayer("ShopItem");
         if (layer >= 0) go.layer = layer;
-        go.transform.position = pos + Vector3.up * go.GetComponent<Renderer>().bounds.extents.y; // pos = punto d'appoggio
         go.AddComponent<Rigidbody>();
         var item = go.AddComponent<ShopItem>();
         item.productId = p.Id;
