@@ -31,7 +31,7 @@ public class TimeUI : MonoBehaviour
     void Start()
     {
         config = GlobalConfig.Instance;
-        timeManager = FindObjectOfType<TimeManager>();
+        timeManager = FindFirstObjectByType<TimeManager>();
 
         if (wakeUpPanel != null)
         {

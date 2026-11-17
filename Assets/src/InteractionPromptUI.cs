@@ -23,7 +23,7 @@ public class InteractionPromptUI : MonoBehaviour
 
     void Start()
     {
-        playerInteraction = FindObjectOfType<PlayerInteraction>();
+        playerInteraction = FindFirstObjectByType<PlayerInteraction>();
         playerCamera = Camera.main;
 
         if (promptPanel != null)
