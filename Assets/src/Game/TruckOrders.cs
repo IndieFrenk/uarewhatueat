@@ -18,19 +18,26 @@ public class TruckOrders : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     static void Hook() => GameBootstrap.Ready += () => new GameObject(nameof(TruckOrders)).AddComponent<TruckOrders>();
 
+    /// <summary>Prezzo d'acquisto al camion: sconto sull'industriale, ricarico sui freschi (GlobalConfig).</summary>
+    public static int UnitCost(Product p)
+    {
+        var c = GlobalConfig.Instance;
+        float k = p.Kind == FoodKind.Industrial ? 1f - c.truckIndustrialDiscount : p.Kind == FoodKind.Natural ? 1f + c.truckSurchargeNatural : 1f;
+        return Mathf.RoundToInt(p.Cost * k);
+    }
+
     void OnEnable()
     {
         Instance = this;
         if (WorldAnchors.StoreroomDrop == null) { Destroy(gameObject); return; }
 
-        var anchor = WorldAnchors.StoreroomDrop;
-        if (anchor == null) return;
+        var anchor = WorldAnchors.OrderBook != null ? WorldAnchors.OrderBook : WorldAnchors.StoreroomDrop;
         var registerGo = new GameObject("OrderBook");
-        registerGo.transform.position = anchor.position + Vector3.up * 0.1f;
+        registerGo.transform.position = anchor.position + Vector3.up * 0.05f;
         registerGo.transform.SetParent(anchor.parent);
 
         var collider = registerGo.AddComponent<BoxCollider>();
-        collider.size = new Vector3(0.15f, 0.15f, 0.15f);
+        collider.size = new Vector3(0.4f, 0.1f, 0.3f); // registro aperto sulla scrivania
         registerGo.AddComponent<OrderMenu>();
 
         GameState.Current.PhaseChanged += OnPhaseChanged;
@@ -59,9 +66,7 @@ public class TruckOrders : MonoBehaviour
         {
             var p = Catalog.All[i];
             int ordered = GameState.Current.PendingOrder.ContainsKey(p.Id) ? GameState.Current.PendingOrder[p.Id] : 0;
-            int cost = p.Cost;
-            if (p.Kind == FoodKind.Industrial)
-                cost = (int)(cost * (1f - GlobalConfig.Instance.truckDiscountIndustrial));
+            int cost = UnitCost(p);
             string offer = p.Kind == FoodKind.Industrial ? " IN OFFERTA" : "";
             options.Add($"{p.Name} — {cost} lire (ordinati: {ordered}){offer}");
         }
@@ -87,10 +92,7 @@ public class TruckOrders : MonoBehaviour
             if (!GameState.Current.PendingOrder.ContainsKey(p.Id))
                 GameState.Current.PendingOrder[p.Id] = 0;
             GameState.Current.PendingOrder[p.Id] += qty;
-            int unitCost = p.Cost;
-            if (p.Kind == FoodKind.Industrial)
-                unitCost = (int)(unitCost * (1f - GlobalConfig.Instance.truckDiscountIndustrial));
-            totalCost += unitCost * qty;
+            totalCost += UnitCost(p) * qty;
             ShowPage();
             return;
         }
@@ -126,18 +128,18 @@ public class TruckOrders : MonoBehaviour
 
         var anchor = WorldAnchors.StoreroomDrop;
         if (anchor == null) return;
-        int spent = 0;
+        int spent = 0, dropped = 0;
         foreach (var entry in new Dictionary<string, int>(GameState.Current.PendingOrder))
         {
             var p = Catalog.Get(entry.Key);
-            int unitCost = p == null ? 0 : (int)(p.Cost * (1f - (p.Kind == FoodKind.Industrial ? GlobalConfig.Instance.truckDiscountIndustrial : 0f)));
+            int unitCost = p == null ? 0 : UnitCost(p);
             if (p == null || unitCost <= 0) continue;
             // solo i pezzi che si possono pagare: il saldo non va sotto zero
             int qty = Mathf.Min(entry.Value, GameState.Current.Money.Savings / unitCost);
             int payed = GameState.Current.Money.Spend(qty * unitCost);
 
             for (int i = 0; i < qty; i++)
-                ShopItem.Spawn(p, anchor.position + new Vector3((i % 5) * 0.25f, 0.3f + (i / 5) * 0.25f, 0f)).SetPrice(p.BasePrice); // prezzo di listino, cambiabile con P
+                ShopItem.Spawn(p, anchor.position + new Vector3((dropped % 5) * 0.3f, 0.2f + (dropped / 20) * 0.3f, (dropped / 5 % 4) * 0.3f)).SetPrice(p.BasePrice); // prezzo di listino, cambiabile con P; griglia 5x4 sul pavimento della zona di scarico, a strati
             spent += payed;
         }
         GameState.Current.PendingOrder.Clear();

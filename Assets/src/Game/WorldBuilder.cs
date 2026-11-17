@@ -57,6 +57,13 @@ public static class WorldBuilder
         foreach (Match m in Regex.Matches(s.Substring(a, b - a), @"-?\d+(\.\d+)?")) n.Add(float.Parse(m.Value, CultureInfo.InvariantCulture));
         var O = new List<Rect>();
         for (int i = 0; i + 3 < n.Count; i += 4) O.Add(new Rect(ShopW - n[i + 2], n[i + 1], n[i + 2] - n[i], n[i + 3] - n[i + 1])); // y = z
+        // la scrivania del magazzino (10) nel json sta a 20 cm dietro la porta e la chiude: la si sposta in fondo al corridoio tra i bancali e il congelatore
+        if (O.Count > 10) O[10] = new Rect(1.3f, 10.4f, .9f, .7f);
+        // varco della porta 1,1 m (era 0,9: con la capsula del giocatore si passava per 2 cm) e scaffale di fondo che non lo restringe
+        if (O.Count > 6) O[6] = new Rect(1.15f, 7.9f, ShopW - 1.15f, .2f);
+        if (O.Count > 4) O[4] = new Rect(1.3f, 7.45f, 4.1f, .45f);
+        // il bancale 14 lasciava 50 cm tra sé e il 13: spostato a nord, il passo verso la zona di scarico diventa di 1,1 m
+        if (O.Count > 14) O[14] = new Rect(2.4f, 10.4f, 1.2f, .7f);
         var cols = new[] { Cream, Wood, new Color(.8f, .8f, .78f), Grey };
         for (int i = 0; i < O.Count && i < ObsH.Length; i++)
         {
@@ -66,11 +73,12 @@ public static class WorldBuilder
             if (m != null && Model(m, p, new Vector3(O[i].center.x, 0, O[i].center.y), ShopModelYaw(m), 1, false, true) != null) box.GetComponent<Renderer>().enabled = false;
         }
 
-        // porta del magazzino a battente nel varco del muro divisorio (x 0.05..0.95, z 8)
+        // porta del magazzino a battente nel varco del muro divisorio (x 0.05..1.15, z 8)
+        // cardine a ovest: aperta ruota di 90 gradi verso il corridoio e sta contro il muro, lasciando libero tutto il varco
         var hinge = Group("PortaMagazzino", p);
-        hinge.position = new Vector3(.95f, 0, 8f);
+        hinge.position = new Vector3(.05f, 0, 8f);
         hinge.gameObject.AddComponent<SwingDoor>().label = "la porta del magazzino";
-        Box("Pannello", hinge, new Vector3(.5f, 1.1f, 8f), new Vector3(.9f, 2.2f, .08f), Wood);
+        Box("Pannello", hinge, new Vector3(.6f, 1.1f, 8f), new Vector3(1.1f, 2.2f, .08f), Wood);
         Box("Serranda", p, new Vector3(3.8f, 1.1f, 11.45f), new Vector3(1.6f, 2.2f, .08f), Grey);
 
         // porte verso la piazza: una per lato del varco
@@ -80,7 +88,10 @@ public static class WorldBuilder
         // cassa, fila, punti per i clienti
         WorldAnchors.Register = Pt("Register", p, 2.4f, 1.1f, 270);
         WorldAnchors.QueuePoints = new[] { Pt("Coda0", p, 2.4f, 1.1f, 270), Pt("Coda1", p, 2.4f, 1.8f, 270), Pt("Coda2", p, 2.7f, 2.5f, 270) };
-        WorldAnchors.StoreroomDrop = Pt("StoreroomDrop", p, 3f, 11f);
+        // consegne sul pavimento davanti alla serranda (zona di scarico, 1,7 x 1,5 m): ci si arriva tra i bancali 13 e 14. Il registro degli ordini sta sulla scrivania.
+        WorldAnchors.StoreroomDrop = Pt("StoreroomDrop", p, 3.8f, 9.7f);
+        WorldAnchors.OrderBook = Pt("PuntoRegistroOrdini", p, O[10].center.x, O[10].center.y);
+        WorldAnchors.OrderBook.position += Vector3.up * ObsH[10];
         var spots = new[] { new Vector2(4.96f, 3), new Vector2(4.96f, 5), new Vector2(4.96f, 6.8f), new Vector2(3f, 3.2f), new Vector2(3f, 4.9f),
                             new Vector2(2f, 7f), new Vector2(3.5f, 7f), new Vector2(4.5f, 7f) };
         WorldAnchors.ShelfSpots = new Transform[spots.Length];

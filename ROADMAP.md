@@ -74,8 +74,8 @@ Comandi in gioco: WASD e mouse, E usa e prende, clic sinistro posa, clic destro 
 - [ ] Sostituire i segnaposto dei personaggi con i modelli scelti.
 
 ## Da fare ancora
-- [ ] Prova di magazzino e controlli reali con mouse e tastiera.
-- [ ] Ritarare spese fisse e margini (industriale vs naturale).
+- [x] Prova di magazzino (playtest-2): la porta era chiusa dalla scrivania (20 cm dietro il varco), scrivania spostata, varco 1,1 m, cardine a ovest, zona di scarico tra i bancali con registro ordini sulla scrivania. Presa e posa provate con i metodi veri di PlayerInteraction. Ancora da provare con mouse e tastiera veri.
+- [x] Ritarate le spese e i margini: camion con sconto industriale 40% e ricarico naturale 12% (`GlobalConfig`). Sette giorni giocati da un bot: solo naturale = a pareggio (+4,6k lire/giorno dopo i fissi), molto industriale = +100k al giorno ma la figlia viene presa. Nota: il prezzo +20% dal menu P è sempre accettato, aggiungerebbe 20% al naturale senza rischio.
 - [ ] Verificare leggibilità delle etichette dei prodotti.
 
 ## Dati e licenze
