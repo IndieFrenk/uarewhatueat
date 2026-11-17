@@ -15,6 +15,9 @@ public class NPCManager : MonoBehaviour
     string seenKey = "";
     float nextSpawn;
     bool registerReady;
+    int trackedDay;
+    int complaintsToday, complaintsYesterday; // clienti usciti a mani vuote per i prezzi: il paese ne parla, domani meno gente
+    public void RegisterComplaint() => complaintsToday++;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     static void Hook() => GameBootstrap.Ready += () => new GameObject(nameof(NPCManager)).AddComponent<NPCManager>();
@@ -47,10 +50,13 @@ public class NPCManager : MonoBehaviour
         }
 
         if (!Open) { nextSpawn = 0; return; }
+        var cfg = GlobalConfig.Instance;
+        int day = GameState.Current.Day;
+        if (day != trackedDay) { trackedDay = day; complaintsYesterday = complaintsToday; complaintsToday = 0; }
         if (nextSpawn == 0) nextSpawn = Time.time + 3f;
         if (Time.time < nextSpawn) return;
-        var cfg = GlobalConfig.Instance;
-        nextSpawn = Time.time + Mathf.Lerp(cfg.customerSpawnMin, cfg.customerSpawnMax, R());
+        float footfall = PriceRules.FootfallFactor(complaintsYesterday, cfg.gossipPerComplaint, cfg.gossipMaxPenalty);
+        nextSpawn = Time.time + Mathf.Lerp(cfg.customerSpawnMin, cfg.customerSpawnMax, R()) / Mathf.Max(0.1f, footfall);
         TrySpawn(cfg);
     }
 
@@ -77,6 +83,7 @@ public class Customer : Interactable
     NPCManager mgr;
     readonly List<ShopItem> basket = new List<ShopItem>();
     bool leaving;
+    bool refusedForPrice;
     float groundY;
     static Texture2D markTex;
 
@@ -89,6 +96,13 @@ public class Customer : Interactable
         ("bar", new[] { "Stasera passo da me, il caffè lo faccio meglio io.", "Il bancone non si pulisce da solo." }),
         ("oste", new[] { "Il vino non lo prendo qui, non si offenda.", "Stasera chiudo tardi, come sempre." }),
         ("piant", new[] { "Le mie piante stanno meglio dei miei clienti.", "Qui dentro manca un po' di verde." }),
+    };
+    static readonly string[] Complaints =
+    {
+        "Ma siamo matti? Con queste lire una volta ci facevo la spesa della settimana!",
+        "Prezzi da Milano, qui! Me ne vado dal Bepi.",
+        "Roba da ladri. Lo dico a tutto il paese!",
+        "Con questi prezzi mi tocca polenta anche a Natale.",
     };
     static readonly string[] Generic = { "Buona giornata.", "Strana aria, oggi.", "Si sente il freddo, eh?" };
 
@@ -227,6 +241,13 @@ public class Customer : Interactable
             }
         }
 
+        if (basket.Count == 0 && refusedForPrice)
+        {
+            mgr.RegisterComplaint();
+            Say(Complaints[NPCManager.RInt(0, Complaints.Length)]);
+            yield return Leave();
+            yield break;
+        }
         if (basket.Count == 0) { Say("Oggi non c'è niente che mi serva."); yield return Leave(); yield break; }
         if (mgr.Queue.Count >= cfg.maxQueueSize) { Say("Troppa gente, torno dopo."); ReturnBasket(); yield return Leave(); yield break; }
 
@@ -266,15 +287,15 @@ public class Customer : Interactable
         if (pool.Count == 0) return;
 
         float total = 0;
-        foreach (var i in pool) total += Weight(i);
+        foreach (var i in pool) total += Weight(i, cfg);
         if (total <= 0) return;
         float r = NPCManager.R() * total;
         ShopItem pick = pool[pool.Count - 1];
-        foreach (var i in pool) { r -= Weight(i); if (r <= 0) { pick = i; break; } }
+        foreach (var i in pool) { r -= Weight(i, cfg); if (r <= 0) { pick = i; break; } }
 
-        if (pick.assignedPrice > pick.Product.BasePrice * (1f + cfg.priceAcceptanceRange))
+        if (NPCManager.R() >= PriceRules.BuyChance(pick.assignedPrice, pick.Product.BasePrice, cfg.priceFreeMargin, cfg.priceZeroAt))
         {
-            Say("Troppo caro!");
+            refusedForPrice = true; // se esce senza niente si lamenta (vedi Run)
             return;
         }
         pick.gameObject.SetActive(false); // nel carrello: sparisce dallo scaffale e dallo stock
@@ -282,7 +303,9 @@ public class Customer : Interactable
         ShopStock.Refresh();
     }
 
-    float Weight(ShopItem i) => V.Habits.TryGetValue(i.Product.Kind, out float w) ? Mathf.Max(0f, w) : 0.1f;
+    float Weight(ShopItem i, GlobalConfig cfg) =>
+        (V.Habits.TryGetValue(i.Product.Kind, out float w) ? Mathf.Max(0f, w) : 0.1f)
+        * PriceRules.DiscountWeight(i.assignedPrice, i.Product.BasePrice, cfg.discountWeightBonus);
 
     void ReturnBasket()
     {
