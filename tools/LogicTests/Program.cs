@@ -7,12 +7,13 @@ static class Program
     {
         try
         {
+            RulesTests.Run();
             DataTests.Run();
             return 0;
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            Console.Error.WriteLine($"❌ Test failed: {ex.Message}");
+            Console.WriteLine($"ERRORE: {e.Message}");
             return 1;
         }
     }
