@@ -16,6 +16,7 @@ public static class WorldBuilder
     static readonly Dictionary<(Color, bool), Material> mats = new Dictionary<(Color, bool), Material>();
     static readonly List<(Material, Color)> emissiveMats = new List<(Material, Color)>();  // materiali ad emissione, colore originale
     static Shader lit;
+    internal const float DoorX = 3.03f; // centro del varco d'ingresso del guscio v4 (x 2.5..3.57)
     static Transform root, plazaCasa, plazaBar;
 
     public static void Build()
@@ -25,8 +26,8 @@ public static class WorldBuilder
         root = new GameObject("Mondo").transform;
         var pt = new GameObject("Punti").transform;
         pt.SetParent(root);
-        WorldAnchors.ShopEntrance = Pt("ShopEntrance", pt, 2.5f, -1.5f, 180); // anche punto d'uscita in piazza
-        WorldAnchors.ShopSpawn = Pt("ShopSpawn", pt, 2.5f, .8f, 0);
+        WorldAnchors.ShopEntrance = Pt("ShopEntrance", pt, DoorX, -1.5f, 180); // anche punto d'uscita in piazza
+        WorldAnchors.ShopSpawn = Pt("ShopSpawn", pt, DoorX, .8f, 0);
         WorldAnchors.HomeSpawn = Pt("HomeSpawn", pt, 103.5f, 1.2f, 0);
         WorldAnchors.BarSpawn = Pt("BarSpawn", pt, 205f, 1.2f, 0);
         plazaCasa = Pt("PiazzaCasa", pt, -4f, -10f, 90);
@@ -49,7 +50,7 @@ public static class WorldBuilder
     static void BuildShop()
     {
         var p = Group("Negozio");
-        Room(p, 0, 0, ShopW, ShopD, 3f, 2.5f, Cream, new Color(.35f, .33f, .3f));
+        Room(p, 0, 0, ShopW, ShopD, 3f, DoorX, Cream, new Color(.35f, .33f, .3f));
         var asset = Resources.Load<TextAsset>("negozio_layout");
         if (asset == null) { Debug.LogError("WorldBuilder: manca Resources/negozio_layout.json"); return; }
 
@@ -68,25 +69,43 @@ public static class WorldBuilder
         // il bancale 14 lasciava 50 cm tra sé e il 13: spostato a nord, il passo verso la zona di scarico diventa di 1,1 m
         if (O.Count > 14) O[14] = new Rect(2.4f, 10.4f, 1.2f, .7f);
         var cols = new[] { Cream, Wood, new Color(.8f, .8f, .78f), Grey };
+        var boxes = new List<GameObject>();
+        var slots = new List<Transform>();
+        var sp = Group("ShelfSlots", p);
         for (int i = 0; i < O.Count && i < ObsH.Length; i++)
+            boxes.Add(Box("Ostacolo" + i, p, new Vector3(O[i].center.x, ObsH[i] / 2, O[i].center.y), new Vector3(O[i].width, ObsH[i], O[i].height), cols[ObsKind[i]]));
+
+        // modelli v4: guscio del negozio e del magazzino al posto di pavimento, muri e soffitto (restano solo i collider); l'esterno è di VillageDressing.
+        // L'import .obj specchia già x: il modello sta a x = ShopW + x_modello, quindi senza rotazione combacia con lo specchio di WorldBuilder.
+        var shell = Model("negozio_guscio", p, new Vector3(ShopW, 0, 0));
+        var shell2 = Model("magazzino", p, new Vector3(ShopW, 0, 0));
+        if (shell != null && shell2 != null)
         {
-            var box = Box("Ostacolo" + i, p, new Vector3(O[i].center.x, ObsH[i] / 2, O[i].center.y), new Vector3(O[i].width, ObsH[i], O[i].height), cols[ObsKind[i]]);
-            // banco affettati (i = 2) e cassa (i = 3): il modello veste il box, che resta come ingombro (collider invariato)
-            string m = i == 2 ? "banco_affettati" : i == 3 ? "cassa" : null;
-            if (m != null && Model(m, p, new Vector3(O[i].center.x, 0, O[i].center.y), ShopModelYaw(m), 1, false, true) != null) box.GetComponent<Renderer>().enabled = false;
+            foreach (var r in p.GetComponentsInChildren<Renderer>()) if (r.transform != shell.transform && r.transform != shell2.transform && !r.transform.IsChildOf(shell.transform) && !r.transform.IsChildOf(shell2.transform)) r.enabled = false;
+            var js = asset.text;
+            int ia = js.IndexOf('[', js.IndexOf("\"istanze\"")), ie = js.LastIndexOf(']');
+            foreach (var it in JsonUtility.FromJson<Instances>("{\"i\":" + js.Substring(ia, ie - ia + 1) + "}").i) PlaceInstance(p, it, O, sp, slots);
         }
+        else foreach (var bx in boxes) bx.GetComponent<Renderer>().enabled = true;
 
         // porta del magazzino a battente nel varco del muro divisorio (x 0.05..1.15, z 8)
         // cardine a ovest: aperta ruota di 90 gradi verso il corridoio e sta contro il muro, lasciando libero tutto il varco
         var hinge = Group("PortaMagazzino", p);
         hinge.position = new Vector3(.05f, 0, 8f);
         hinge.gameObject.AddComponent<SwingDoor>().label = "la porta del magazzino";
-        Box("Pannello", hinge, new Vector3(.6f, 1.1f, 8f), new Vector3(1.1f, 2.2f, .08f), Wood);
-        Box("Serranda", p, new Vector3(3.8f, 1.1f, 11.45f), new Vector3(1.6f, 2.2f, .08f), Grey);
+        var pannello = Box("Pannello", hinge, new Vector3(.6f, 1.1f, 8f), new Vector3(1.1f, 2.2f, .08f), Wood);
+        var portaMod = shell != null ? Model("porta_magazzino", hinge, new Vector3(.9f, 0, 0)) : null; // foglio 0,9 m, cardine ad ovest (il modello ha il suo a est: solo la maniglia cambia lato)
+        if (portaMod != null) pannello.GetComponent<Renderer>().enabled = false;
+        var serr = Box("Serranda", p, new Vector3(3.8f, 1.1f, 11.45f), new Vector3(1.6f, 2.2f, .08f), Grey);
+        if (shell != null && shell2 != null && p.Find("serranda") != null) serr.GetComponent<Renderer>().enabled = false;
 
         // porte verso la piazza: una per lato del varco
-        MakeDoor(new Vector3(2.5f, 1.1f, -.05f), new Vector3(1, 2.2f, .1f), "Esci in piazza", WorldAnchors.ShopEntrance, Glass, p);
-        MakeDoor(new Vector3(2.5f, 1.1f, -.15f), new Vector3(1, 2.2f, .1f), "Entra nel negozio", WorldAnchors.ShopSpawn, Glass, p);
+        MakeDoor(new Vector3(DoorX, 1.1f, -.05f), new Vector3(1, 2.2f, .1f), "Esci in piazza", WorldAnchors.ShopEntrance, Glass, p);
+        MakeDoor(new Vector3(DoorX, 1.1f, -.15f), new Vector3(1, 2.2f, .1f), "Entra nel negozio", WorldAnchors.ShopSpawn, Glass, p);
+        // porta a vetri del modello, chiusa nel varco del guscio (world x 2,5..3,57: il json la mette 50 cm a est del varco 2..3 della facciata esterna;
+        // i due box sopra restano come collider e interazione, il giocatore passa teletrasportato dalla dissolvenza)
+        if (shell != null && Model("porta_vetro", p, new Vector3(3.57f, 0, 0)) != null)
+            foreach (var d in p.GetComponentsInChildren<Door>()) d.GetComponent<Renderer>().enabled = false;
 
         // cassa, fila, punti per i clienti
         WorldAnchors.Register = Pt("Register", p, 2.4f, 1.1f, 270);
@@ -100,14 +119,15 @@ public static class WorldBuilder
         WorldAnchors.ShelfSpots = new Transform[spots.Length];
         for (int i = 0; i < spots.Length; i++) WorldAnchors.ShelfSpots[i] = Pt("Spot" + i, p, spots[i].x, spots[i].y);
 
-        // scaffali: [0] a muro sinistro, [1] isola (due facce), [4] fondo. Ripiani con i punti dove spawnano i prodotti.
-        var slots = new List<Transform>();
-        var sp = Group("ShelfSlots", p);
-        float[] levels = { .45f, .95f, 1.45f };
-        Shelf(sp, slots, levels, new Vector3(O[0].xMin - .08f, 0, 2f), new Vector3(O[0].xMin - .08f, 0, 7.2f), 8);
-        Shelf(sp, slots, levels, new Vector3(O[1].xMin - .08f, 0, 2.9f), new Vector3(O[1].xMin - .08f, 0, 5.3f), 4);
-        Shelf(sp, slots, levels, new Vector3(O[1].xMax + .08f, 0, 2.9f), new Vector3(O[1].xMax + .08f, 0, 5.3f), 4);
-        Shelf(sp, slots, levels, new Vector3(1.4f, 0, O[4].yMin - .08f), new Vector3(5f, 0, O[4].yMin - .08f), 5);
+        // scaffali: senza modelli, mensole e punti dei prodotti da primitive ([0] a muro, [1] isola a due facce, [4] fondo)
+        if (slots.Count == 0)
+        {
+            float[] levels = { .45f, .95f, 1.45f };
+            Shelf(sp, slots, levels, new Vector3(O[0].xMin - .08f, 0, 2f), new Vector3(O[0].xMin - .08f, 0, 7.2f), 8);
+            Shelf(sp, slots, levels, new Vector3(O[1].xMin - .08f, 0, 2.9f), new Vector3(O[1].xMin - .08f, 0, 5.3f), 4);
+            Shelf(sp, slots, levels, new Vector3(O[1].xMax + .08f, 0, 2.9f), new Vector3(O[1].xMax + .08f, 0, 5.3f), 4);
+            Shelf(sp, slots, levels, new Vector3(1.4f, 0, O[4].yMin - .08f), new Vector3(5f, 0, O[4].yMin - .08f), 5);
+        }
         WorldAnchors.ShelfSlots = slots.ToArray();
 
         // luci a soffitto
@@ -121,8 +141,33 @@ public static class WorldBuilder
         WorldAnchors.ShopLights = lights;
     }
 
-    // Rotazione dei modelli del negozio (da calibrare nell'editor): il fronte guarda verso +x mondo, dove stanno i clienti.
-    static float ShopModelYaw(string m) => 0;
+    [System.Serializable] class Inst { public string modello; public float x, y, z, rotY, scala; }
+    [System.Serializable] class Instances { public Inst[] i; }
+
+    // Posa un'istanza di negozio_layout.json con la specchiatura x_unity = ShopW - x_json, rotY -> -rotY (l'import .obj specchia già la mesh).
+    // Scrivania e bancale c2 del magazzino stanno dove li ha messi il playtest 2 (O[10], O[14]) per tenere liberi i passaggi.
+    static void PlaceInstance(Transform p, Inst it, List<Rect> O, Transform sp, List<Transform> slots)
+    {
+        string m = it.modello;
+        if (m == "magazzino" || m.StartsWith("porta_")) return; // guscio già posato, le porte sono in BuildShop (a battente / chiusa nel varco)
+        m = m == "bancale_c1" ? "bancale" : m == "rack_mag_dx1" ? "rack_mag_dx0" : m.StartsWith("cestone") ? "cestone" : m;
+        var pos = new Vector3(ShopW - it.x, it.y, it.z);
+        float yaw = -it.rotY;
+        if (m == "scrivania_mag" && O.Count > 10) pos = new Vector3(O[10].xMax, 0, O[10].yMin);
+        else if (m == "sgabello" && it.z > 8) pos = new Vector3(O[10].center.x, 0, O[10].yMin - .4f);
+        else if (m == "bancale_c2" && O.Count > 14) pos = new Vector3(O[14].center.x, 0, O[14].center.y);
+        var g = Model(m, p, pos, yaw, it.scala);
+        if (g == null || !m.StartsWith("sc_")) return;
+        // prodotti sui ripiani del modello: ripiani misurati dalle mesh a 0,60 / 1,05 / 1,50 (isola 1,55), profondità 0,23 dal retro, due punti per ripiano
+        foreach (float y in new[] { .6f, 1.05f, m.StartsWith("sc_is") ? 1.55f : 1.5f })
+            foreach (float x in new[] { -.375f, -1.125f })
+            {
+                var t = new GameObject("Slot").transform;
+                t.SetParent(sp);
+                t.position = g.transform.TransformPoint(new Vector3(x, y, .23f));
+                slots.Add(t);
+            }
+    }
 
     // Ripiani lungo una linea: per ogni livello una mensola e n punti equidistanti.
     static void Shelf(Transform sp, List<Transform> slots, float[] levels, Vector3 from, Vector3 to, int n)
@@ -290,11 +335,11 @@ public static class WorldBuilder
         return g;
     }
 
-    // Istanzia Resources/Models/v3/<name> (pos e yaw locali a parent). center: pos = centro in pianta e piede del modello (altrimenti pos = origine).
+    // Istanzia Resources/Models/v4/<name> (o v3) (pos e yaw locali a parent). center: pos = centro in pianta e piede del modello (altrimenti pos = origine).
     // collider: BoxCollider dai bounds. Ritorna null se il modello manca: il chiamante tiene la primitiva.
     internal static GameObject Model(string name, Transform parent, Vector3 pos, float yaw = 0, float scale = 1, bool collider = false, bool center = false)
     {
-        var prefab = Resources.Load<GameObject>("Models/v3/" + name);
+        var prefab = Resources.Load<GameObject>("Models/v4/" + name) ?? Resources.Load<GameObject>("Models/v3/" + name);
         if (prefab == null) return null;
         var g = Object.Instantiate(prefab, parent, false);
         g.name = name;

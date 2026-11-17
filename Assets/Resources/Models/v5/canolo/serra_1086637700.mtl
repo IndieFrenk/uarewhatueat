@@ -1,0 +1,12 @@
+newmtl metallo_9aa1a6
+Kd 0.604 0.631 0.651
+map_Kd texture/metallo.png
+newmtl vetro_bfd8c8
+Kd 0.749 0.847 0.784
+map_Kd texture/vetro.png
+newmtl metallo_e8e4d4
+Kd 0.910 0.894 0.831
+map_Kd texture/metallo.png
+newmtl erba_4f8a3a
+Kd 0.310 0.541 0.227
+map_Kd texture/erba.png

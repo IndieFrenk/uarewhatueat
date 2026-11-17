@@ -92,17 +92,10 @@ public class PlayerInteraction : MonoBehaviour
     /// </summary>
     void CheckForGrabbableItems()
     {
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit, grabDistance))
+        if (debugMode && FindGrabbable(playerCamera, grabDistance) != null)
         {
-            ShopItem item = hit.collider.GetComponent<ShopItem>();
-            if (item != null && !item.isBeingHeld)
-            {
-                if (debugMode)
-                    Debug.DrawRay(ray.origin, ray.direction * grabDistance, Color.green);
-            }
+            Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+            Debug.DrawRay(ray.origin, ray.direction * grabDistance, Color.green);
         }
     }
 
@@ -224,23 +217,32 @@ public class PlayerInteraction : MonoBehaviour
     /// <summary>
     /// Try to grab an item
     /// </summary>
-    bool TryGrabItem()
+    /// <summary>
+    /// Oggetto afferrabile al centro dello schermo, con linea di vista: il primo collider solido colpito
+    /// (non trigger) deve essere l'oggetto o un suo figlio, altrimenti un muro/scaffale lo copre. Usato da presa e prompt.
+    /// </summary>
+    public static ShopItem FindGrabbable(Camera cam, float range)
     {
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
-        RaycastHit[] hits = Physics.RaycastAll(ray, grabDistance);
-
-        // Sort by distance
+        Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        RaycastHit[] hits = Physics.RaycastAll(ray, range, ~0, QueryTriggerInteraction.Ignore);
         System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
         foreach (RaycastHit hit in hits)
         {
-            ShopItem item = hit.collider.GetComponent<ShopItem>();
-            
-            if (item != null && !item.isBeingHeld)
-            {
-                GrabItem(item);
-                return true;
-            }
+            ShopItem item = hit.collider.GetComponentInParent<ShopItem>();
+            if (item == null) return null; // coperto da qualcosa che non è un oggetto afferrabile
+            if (!item.isBeingHeld) return item;
+        }
+        return null;
+    }
+
+    bool TryGrabItem()
+    {
+        ShopItem item = FindGrabbable(playerCamera, grabDistance);
+        if (item != null)
+        {
+            GrabItem(item);
+            return true;
         }
 
         if (debugMode)
