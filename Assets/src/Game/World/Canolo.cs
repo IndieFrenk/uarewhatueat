@@ -222,7 +222,7 @@ public static class Canolo
     static Texture2D Noise(Color a, Color b)
     {
         var t = new Texture2D(16, 16) { wrapMode = TextureWrapMode.Repeat };
-        for (int i = 0; i < 16; i++) for (int j = 0; j < 16; j++) t.SetPixel(i, j, Color.Lerp(a, b, (float)rnd.NextDouble()));
+        for (int i = 0; i < 16; i++) for (int j = 0; j < 16; j++) { var c = Color.Lerp(a, b, (float)rnd.NextDouble()); c.a = 0; t.SetPixel(i, j, c); } // alfa = smoothness del Terrain URP: 0 = opaco
         t.Apply();
         return t;
     }
