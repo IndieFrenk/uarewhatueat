@@ -114,6 +114,49 @@ public class GlobalConfig : MonoBehaviour
     [Tooltip("Risparmi di partenza in lire (la X della trama)")]
     public int startingSavings = 500000;
 
+    [Header("=== FLUSSO GIORNATA ===")]
+    [Tooltip("Oltre questa distanza dal punto d'ingresso del negozio, all'apertura compare 'vai al negozio' (metri)")]
+    public float shopFarDistance = 15f;
+    [Header("=== MONDO ===")]
+    [Tooltip("Durata (s) di ciascuna metà della dissolvenza nera quando si attraversa una porta")]
+    public float doorFadeSeconds = 0.35f;
+
+    [Tooltip("Intensità delle luci a soffitto (negozio, casa, bar)")]
+    public float shopLightIntensity = 2f;
+
+    [Tooltip("Raggio delle luci a soffitto")]
+    public float shopLightRange = 7f;
+
+    [Tooltip("Intensità dei lampioni della piazza")]
+    public float streetLampIntensity = 3f;
+    [Header("=== ATMOSFERA ===")]
+    [Tooltip("Densità minima nebbia (sera/notte)")]
+    public float fogDensityMin = 0.01f;
+
+    [Tooltip("Densità massima nebbia (notte profonda)")]
+    public float fogDensityMax = 0.05f;
+
+    [Tooltip("Moltiplicatore densità nebbia per ogni giorno passato")]
+    public float fogDensityDayMultiplier = 0.005f;
+
+    [Tooltip("Probabilità tremolio luci negozio (0-1)")]
+    public float shopLightFlickerChance = 0.04f;
+
+    [Tooltip("Durata del tremolio in secondi")]
+    public float shopLightFlickerDuration = 0.1f;
+
+    [Tooltip("Moltiplicatore frequenza tremolio dal giorno 3+")]
+    public float flickerFrequencyMultiplierDay3Plus = 2f;
+
+    [Tooltip("Intensità della luce nel cielo per le prese")]
+    public float skyLightIntensity = 3f;
+
+    [Tooltip("Durata della luce nel cielo in secondi")]
+    public float skyLightDuration = 3f;
+
+    [Tooltip("Clip audio opzionale per le notti di presa")]
+    public AudioClip humClip;
+
     // VARIABILI RUNTIME (non modificabili dall'inspector)
     [HideInInspector] public float currentHour = 7f;
     [HideInInspector] public float currentMinute = 0f;

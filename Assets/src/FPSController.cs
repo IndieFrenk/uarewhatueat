@@ -311,6 +311,11 @@ public class FPSController : MonoBehaviour
         mouseSensitivityY = sensitivity;
     }
 
+    public void SetCamera(Transform cam)
+    {
+        cameraTransform = cam;
+    }
+
     public void SetWalkSpeed(float speed)
     {
         walkSpeed = speed;
