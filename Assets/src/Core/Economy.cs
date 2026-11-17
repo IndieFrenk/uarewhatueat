@@ -23,6 +23,7 @@ public class Economy
     /// <summary>Spende al massimo quanto c'è. Ritorna la cifra spesa davvero.</summary>
     public int Spend(int lire)
     {
+        if (lire <= 0) return 0;
         int speso = Math.Min(lire, Savings);
         Savings -= speso;
         SpentToday += speso;
