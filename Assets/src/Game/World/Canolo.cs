@@ -58,7 +58,7 @@ public static class Canolo
         var qA = Resources.Load<TextAsset>("canolo_quote");
         if (osmA == null || qA == null) { Debug.LogError("Canolo: mancano Resources/canolo_osm.json o canolo_quote.json"); return; }
         rnd = new System.Random(1990);
-        meshes.Clear(); placed.Clear(); boxes.Clear(); roadPts.Clear(); nBuild = nTrees = nModels = 0;
+        meshes.Clear(); placed.Clear(); boxes.Clear(); roadPts.Clear(); nBuild = nTrees = nModels = nTris = 0;
         LoadGrid(qA.text);
         var osm = (Dictionary<string, object>)Mini.Parse(osmA.text);
         var water = Polys(osm, "acque", true);
@@ -79,7 +79,7 @@ public static class Canolo
 
         var cam = Camera.main; // il Terrain arriva a 2,5 km
         if (cam != null) cam.farClipPlane = Mathf.Max(cam.farClipPlane, 6000f);
-        Debug.Log($"Canolo: {nBuild} edifici ({nModels} modelli v5), {nTrees} alberi, {meshes.Count} mesh combinate");
+        Debug.Log($"Canolo: {nBuild} edifici ({nModels} modelli v5), {nTrees} alberi, {nTris} triangoli di vegetazione v5, {meshes.Count} mesh combinate");
     }
 
     // ---------------- DATI ----------------
@@ -518,6 +518,50 @@ public static class Canolo
         return true;
     }
 
+    // ---------------- VEGETAZIONE v5 ----------------
+    // Alberi, cespugli, sassi, muretti e staccionate: modelli di Resources/Models/v5/vegetazione (design/modelli-3d/strumenti/vegetazione_v5.py), fusi per
+    // (materiale, cella) come gli edifici. Niente collider. Se un modello manca (o non e' leggibile) Put() torna false e il chiamante usa le primitive.
+    class VegPart { public Mesh mesh; public int sub; public Material mat; public Matrix4x4 local; }
+    static readonly Dictionary<string, VegPart[]> vegParts = new Dictionary<string, VegPart[]>();
+    static int nTris;   // triangoli dei modelli di vegetazione posati (log)
+
+    static VegPart[] Veg(string name)
+    {
+        if (vegParts.TryGetValue(name, out var parts)) return parts;
+        var list = new List<VegPart>();
+        var prefab = Resources.Load<GameObject>("Models/v5/vegetazione/" + name);
+        if (prefab != null)
+            foreach (var mf in prefab.GetComponentsInChildren<MeshFilter>())
+            {
+                var mr = mf.GetComponent<MeshRenderer>();
+                if (mf.sharedMesh == null || !mf.sharedMesh.isReadable || mr == null || mr.sharedMaterials.Length == 0) { list.Clear(); break; }
+                var mats = mr.sharedMaterials;
+                for (int si = 0; si < mf.sharedMesh.subMeshCount; si++)
+                {
+                    var m0 = mats[Mathf.Min(si, mats.Length - 1)];
+                    if (!sharedMats.TryGetValue(m0.name, out var m)) sharedMats[m0.name] = m = m0;
+                    list.Add(new VegPart { mesh = mf.sharedMesh, sub = si, mat = m, local = prefab.transform.worldToLocalMatrix * mf.transform.localToWorldMatrix });
+                }
+            }
+        return vegParts[name] = list.Count > 0 ? list.ToArray() : null;
+    }
+
+    static bool Put(string name, Vector3 pos, Quaternion rot, Vector3 scale, bool shadow = false)
+    {
+        var parts = Veg(name);
+        if (parts == null) return false;
+        var world = Matrix4x4.TRS(pos, rot, scale);
+        int cx = Mathf.FloorToInt(pos.x / Cell), cz = Mathf.FloorToInt(pos.z / Cell);
+        foreach (var p in parts)
+        {
+            var k = (p.mat, cx, cz, shadow);
+            if (!placed.TryGetValue(k, out var list)) placed[k] = list = new List<CombineInstance>();
+            list.Add(new CombineInstance { mesh = p.mesh, subMeshIndex = p.sub, transform = world * p.local });
+            nTris += (int)(p.mesh.GetIndexCount(p.sub) / 3);
+        }
+        return true;
+    }
+
     // Quadro (centro cw, semilarghezza dx, semialtezza) con la faccia verso o.
     static void Win(MB m, Vector3 cw, Vector3 dx, float hh, Vector3 o)
     {
@@ -588,15 +632,22 @@ public static class Canolo
 
     static string Tag(Poly p, string k) => p.tag.TryGetValue(k, out var v) && v is string s ? s : "";
 
-    // Recinti come muretti bassi (1 m, spessore 24 cm) che seguono il terreno.
+    // Recinti: modelli v5 (muretto / staccionata); senza modelli, muretti bassi di primitive (1 m, spessore 24 cm) che seguono il terreno.
     static void Recinti(List<Poly> fences)
     {
         foreach (var f in fences)
         {
-            var s = Resample(f.p, 3f);
+            // modelli v5: muretto a secco (modulo 2 m) o staccionata (modulo 3 m) a seconda del recinto; ogni modulo e' disteso sulla pendenza del terreno
+            string mod = Hash(f.id, 0) < .5f ? "muretto" : "staccionata_v5";
+            float len = mod == "muretto" ? 2f : 3f;
+            var s = Resample(f.p, len);
             for (int k = 0; k + 1 < s.Count; k++)
             {
                 if (InArea(s[k].x, s[k].y, 2) || InArea(s[k + 1].x, s[k + 1].y, 2)) continue;
+                var a3 = new Vector3(s[k].x, Ground(s[k].x, s[k].y), s[k].y);
+                var b3 = new Vector3(s[k + 1].x, Ground(s[k + 1].x, s[k + 1].y), s[k + 1].y);
+                var d3 = b3 - a3;
+                if (d3.sqrMagnitude > 1e-4f && Put(mod, (a3 + b3) / 2, Quaternion.FromToRotation(Vector3.right, d3), new Vector3(d3.magnitude / len, 1, 1))) continue;
                 var m = M(VillageDressing.Stone, s[k].x, s[k].y, false, false);
                 Vector2 na = Side(s, k) * .12f, nb = Side(s, k + 1) * .12f;
                 Vector3 Pt(Vector2 q, Vector2 n, float dy) => new Vector3(q.x + n.x, Ground(q.x, q.y) + dy, q.y + n.y);
@@ -675,9 +726,25 @@ public static class Canolo
                     nTrees++;
                     float s = 1f + (float)rnd.NextDouble() * .7f;
                     int v = rnd.Next(3);
-                    if (mode == 1) Cone(M(Pines[v], X, Z, false, false), X, y, Z, 1.8f * s, 6f * s, 5, false);
-                    else if (rnd.NextDouble() < (mode == 2 ? .6 : .3)) Chestnut(X, y, Z, s, v);
-                    else Pine(X, y, Z, s, v);
+                    bool far = mode == 1 || r2 > 150f * 150f;   // oltre 150 m (e nel bosco lontano) il modello a basso LOD
+                    float u = (float)rnd.NextDouble();
+                    string name = mode == 2 ? (u < .25f ? "ulivo" : u < .6f ? "castagno" : "abete") : mode == 0 && u < .3f ? "castagno" : "abete";
+                    if (name == "abete") name = far ? "abete_lod1" : (v == 0 ? "abete_b" : "abete_a");
+                    else if (name == "castagno" && far) name = "castagno_lod1";
+                    var rot = Quaternion.Euler(0, (float)rnd.NextDouble() * 360f, 0);
+                    if (!Put(name, new Vector3(X, y, Z), rot, Vector3.one * s))   // fallback: primitive
+                    {
+                        if (mode == 1) Cone(M(Pines[v], X, Z, false, false), X, y, Z, 1.8f * s, 6f * s, 5, false);
+                        else if (name.StartsWith("castagno") || name == "ulivo") Chestnut(X, y, Z, s, v);
+                        else Pine(X, y, Z, s, v);
+                    }
+                    // sottobosco vicino: cespugli e sassi (solo con i modelli)
+                    if (mode == 0 && !far && rnd.NextDouble() < .22)
+                    {
+                        float bx = X + ((float)rnd.NextDouble() - .5f) * 5f, bz = Z + ((float)rnd.NextDouble() - .5f) * 5f;
+                        string pn = rnd.NextDouble() < .6 ? "cespuglio" : (rnd.NextDouble() < .5 ? "sasso_a" : "sasso_b");
+                        if (!Blocked(bx, bz)) Put(pn, new Vector3(bx, Ground(bx, bz), bz), Quaternion.Euler(0, (float)rnd.NextDouble() * 360f, 0), Vector3.one * (.8f + (float)rnd.NextDouble() * .7f));
+                    }
                 }
     }
 

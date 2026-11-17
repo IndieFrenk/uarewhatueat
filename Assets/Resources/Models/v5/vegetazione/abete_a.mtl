@@ -1,0 +1,12 @@
+newmtl corteccia_6a4a35
+Kd 0.416 0.290 0.208
+map_Kd texture/corteccia.png
+newmtl aghi_2f5b3a
+Kd 0.184 0.357 0.227
+map_Kd texture/aghi.png
+newmtl aghi_2a5236
+Kd 0.165 0.322 0.212
+map_Kd texture/aghi.png
+newmtl aghi_244a30
+Kd 0.141 0.290 0.188
+map_Kd texture/aghi.png
