@@ -5,3 +5,5 @@ obj/
 Build/
 Builds/
 .claude/worktrees/
+Assets/Screenshots/
+Assets/Screenshots.meta

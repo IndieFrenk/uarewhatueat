@@ -238,7 +238,9 @@ public static class VillageDressing
         Sign(bar, "BAR SPORT", V(0, 3.4f, 4.1f), 5.5f, new Color(.45f, .08f, .08f), Cream, 1f);
 
         // negozio: insegna sopra la porta
-        Sign(WorldBuilder.Group("Ancora", p), "ALIMENTARI", V(3, 2.6f, -.3f), 4f, new Color(.25f, .4f, .3f), Cream, .7f);
+        var ancora = WorldBuilder.Group("Ancora", p);
+        ancora.rotation = E(0, 180, 0); // il +z locale guarda la piazza, come le altre facciate
+        Sign(ancora, "ALIMENTARI", V(-3, 2.6f, .3f), 4f, new Color(.25f, .4f, .3f), Cream, .7f);
 
         // fila nord (facce a sud, facciata a z=1,8)
         var mac = Shop(p, V(-9, 0, 5.8f), 180, 12, 8, 6.5f, new Color(.82f, .7f, .64f), Roofs[0], "MACELLERIA", new Color(.45f, .1f, .1f), Cream, Red, Cream);
