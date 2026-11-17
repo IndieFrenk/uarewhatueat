@@ -5,7 +5,8 @@ static class Program
 {
     static int Main()
     {
-        Console.WriteLine("LogicTests: nessun test ancora.");
+        EndingsTests.Run();
+        Console.WriteLine("LogicTests: ok.");
         return 0;
     }
 }
