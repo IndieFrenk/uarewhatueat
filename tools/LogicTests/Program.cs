@@ -10,6 +10,7 @@ static class Program
             RulesTests.Run();
             DataTests.Run();
             EndingsTests.Run();
+            PriceTests.Run();
             return 0;
         }
         catch (Exception e)

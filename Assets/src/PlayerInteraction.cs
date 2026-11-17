@@ -227,20 +227,22 @@ public class PlayerInteraction : MonoBehaviour
     bool TryGrabItem()
     {
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
-        RaycastHit[] hits = Physics.RaycastAll(ray, grabDistance);
+        RaycastHit[] hits = Physics.RaycastAll(ray, grabDistance, ~0, QueryTriggerInteraction.Ignore);
 
         // Sort by distance
         System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
         foreach (RaycastHit hit in hits)
         {
-            ShopItem item = hit.collider.GetComponent<ShopItem>();
-            
+            ShopItem item = hit.collider.GetComponentInParent<ShopItem>();
+
             if (item != null && !item.isBeingHeld)
             {
                 GrabItem(item);
                 return true;
             }
+            // linea di vista: il primo collider solido che non è un oggetto afferrabile (muro, scaffale) blocca la presa
+            if (item == null) break;
         }
 
         if (debugMode)

@@ -51,8 +51,21 @@ public class GlobalConfig : MonoBehaviour
     [Tooltip("Distanza massima per interagire con NPC")]
     public float interactionDistance = 3f;
     
-    [Tooltip("Range percentuale accettabile per il prezzo (es: 0.2 = ±20%)")]
-    public float priceAcceptanceRange = 0.2f;
+    [Header("=== PREZZI (elasticità) ===")]
+    [Tooltip("Sovrapprezzo sul listino che i clienti accettano sempre (0.05 = +5%)")]
+    public float priceFreeMargin = 0.05f;
+
+    [Tooltip("Sovrapprezzo a cui nessuno compra più (0.4 = +40%). Tra il margine libero e questo valore la probabilità di acquisto scende linearmente")]
+    public float priceZeroAt = 0.4f;
+
+    [Tooltip("Bonus di scelta per i prodotti sotto listino: a -20% il peso sale di 0.2 * questo valore")]
+    public float discountWeightBonus = 0.5f;
+
+    [Tooltip("Quanto cala l'afflusso di clienti domani per ogni cliente uscito lamentandosi oggi (0.1 = -10%)")]
+    public float gossipPerComplaint = 0.1f;
+
+    [Tooltip("Calo massimo dell'afflusso di clienti dovuto al passaparola (0.5 = al massimo -50%)")]
+    public float gossipMaxPenalty = 0.5f;
 
     [Header("=== NPC UNICI ===")]
     [Tooltip("Numero di NPC unici che entrano nel negozio")]
