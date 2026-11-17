@@ -114,6 +114,24 @@ public class GlobalConfig : MonoBehaviour
     [Tooltip("Risparmi di partenza in lire (la X della trama)")]
     public int startingSavings = 500000;
 
+    [Header("=== FIGLIA ===")]
+    [Tooltip("Probabilità che la figlia mangi dolci di nascosto se ce ne sono in negozio (0-1)")]
+    public float daughterSweetProbability = 0.6f;
+
+    [Tooltip("Quantità di Industrial che la figlia aggiunge quando mangia dolci")]
+    public int daughterSweets = 1;
+
+    [Tooltip("Giorno da cui la figlia inizia a rispondere sinceramente al dialogo (se padre a casa 2+ sere)")]
+    public int daughterHonestDay = 5;
+
+    [Tooltip("Notti da stare a casa affinché la figlia risponda sinceramente")]
+    public int daughterNightsHome = 2;
+
+    [Tooltip("Probabilità giornaliera che la figlia disegni il marchio")]
+    public float daughterDrawProbability = 0.4f;
+
+    [Tooltip("Giorno da cui la figlia inizia a disegnare")]
+    public int daughterDrawStartDay = 3;
     [Header("=== CAMION ===")]
     [Tooltip("Sconto per i prodotti industriali al camion")]
     public float truckDiscountIndustrial = 0.2f;
