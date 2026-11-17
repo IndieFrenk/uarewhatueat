@@ -114,6 +114,12 @@ public class GlobalConfig : MonoBehaviour
     [Tooltip("Risparmi di partenza in lire (la X della trama)")]
     public int startingSavings = 500000;
 
+    [Header("=== CAMION ===")]
+    [Tooltip("Sconto per i prodotti industriali al camion")]
+    public float truckDiscountIndustrial = 0.2f;
+
+    [Tooltip("Pezzi per ordine")]
+    public int truckOrderQuantity = 5;
     [Header("=== CLIENTI ===")]
     [Tooltip("Secondi reali minimi tra un ingresso e l'altro")]
     public float customerSpawnMin = 15f;
