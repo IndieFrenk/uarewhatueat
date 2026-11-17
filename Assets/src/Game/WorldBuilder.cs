@@ -16,6 +16,7 @@ public static class WorldBuilder
     static readonly Dictionary<(Color, bool), Material> mats = new Dictionary<(Color, bool), Material>();
     static readonly List<(Material, Color)> emissiveMats = new List<(Material, Color)>();  // materiali ad emissione, colore originale
     static Shader lit;
+    internal const float DoorX = 3.03f; // centro del varco d'ingresso del guscio v4 (x 2.5..3.57)
     static Transform root, plazaCasa, plazaBar;
 
     public static void Build()
@@ -25,8 +26,8 @@ public static class WorldBuilder
         root = new GameObject("Mondo").transform;
         var pt = new GameObject("Punti").transform;
         pt.SetParent(root);
-        WorldAnchors.ShopEntrance = Pt("ShopEntrance", pt, 2.5f, -1.5f, 180); // anche punto d'uscita in piazza
-        WorldAnchors.ShopSpawn = Pt("ShopSpawn", pt, 2.5f, .8f, 0);
+        WorldAnchors.ShopEntrance = Pt("ShopEntrance", pt, DoorX, -1.5f, 180); // anche punto d'uscita in piazza
+        WorldAnchors.ShopSpawn = Pt("ShopSpawn", pt, DoorX, .8f, 0);
         WorldAnchors.HomeSpawn = Pt("HomeSpawn", pt, 103.5f, 1.2f, 0);
         WorldAnchors.BarSpawn = Pt("BarSpawn", pt, 205f, 1.2f, 0);
         plazaCasa = Pt("PiazzaCasa", pt, -4f, -10f, 90);
@@ -49,7 +50,7 @@ public static class WorldBuilder
     static void BuildShop()
     {
         var p = Group("Negozio");
-        Room(p, 0, 0, ShopW, ShopD, 3f, 2.5f, Cream, new Color(.35f, .33f, .3f));
+        Room(p, 0, 0, ShopW, ShopD, 3f, DoorX, Cream, new Color(.35f, .33f, .3f));
         var asset = Resources.Load<TextAsset>("negozio_layout");
         if (asset == null) { Debug.LogError("WorldBuilder: manca Resources/negozio_layout.json"); return; }
 
@@ -99,8 +100,8 @@ public static class WorldBuilder
         if (shell != null && shell2 != null && p.Find("serranda") != null) serr.GetComponent<Renderer>().enabled = false;
 
         // porte verso la piazza: una per lato del varco
-        MakeDoor(new Vector3(2.5f, 1.1f, -.05f), new Vector3(1, 2.2f, .1f), "Esci in piazza", WorldAnchors.ShopEntrance, Glass, p);
-        MakeDoor(new Vector3(2.5f, 1.1f, -.15f), new Vector3(1, 2.2f, .1f), "Entra nel negozio", WorldAnchors.ShopSpawn, Glass, p);
+        MakeDoor(new Vector3(DoorX, 1.1f, -.05f), new Vector3(1, 2.2f, .1f), "Esci in piazza", WorldAnchors.ShopEntrance, Glass, p);
+        MakeDoor(new Vector3(DoorX, 1.1f, -.15f), new Vector3(1, 2.2f, .1f), "Entra nel negozio", WorldAnchors.ShopSpawn, Glass, p);
         // porta a vetri del modello, chiusa nel varco del guscio (world x 2,5..3,57: il json la mette 50 cm a est del varco 2..3 della facciata esterna;
         // i due box sopra restano come collider e interazione, il giocatore passa teletrasportato dalla dissolvenza)
         if (shell != null && Model("porta_vetro", p, new Vector3(3.57f, 0, 0)) != null)
