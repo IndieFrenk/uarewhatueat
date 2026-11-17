@@ -114,6 +114,13 @@ public class GlobalConfig : MonoBehaviour
     [Tooltip("Risparmi di partenza in lire (la X della trama)")]
     public int startingSavings = 500000;
 
+    [Header("=== CAMION ===")]
+    [Tooltip("Sconto per i prodotti industriali al camion")]
+    public float truckDiscountIndustrial = 0.2f;
+
+    [Tooltip("Pezzi per ordine")]
+    public int truckOrderQuantity = 5;
+
     // VARIABILI RUNTIME (non modificabili dall'inspector)
     [HideInInspector] public float currentHour = 7f;
     [HideInInspector] public float currentMinute = 0f;
