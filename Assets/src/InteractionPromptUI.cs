@@ -72,30 +72,15 @@ public class InteractionPromptUI : MonoBehaviour
     /// </summary>
     void ShowGrabPrompt()
     {
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit, playerInteraction.grabDistance))
+        ShopItem item = PlayerInteraction.FindGrabbable(playerCamera, playerInteraction.grabDistance);
+        if (item != null)
         {
-            ShopItem item = hit.collider.GetComponent<ShopItem>();
-            
-            if (item != null && !item.isBeingHeld)
-            {
-                string message = grabPrompt;
-                message += $"\n{item.itemName}";
-                
-                if (item.HasPrice())
-                {
-                    message += $" - {item.assignedPrice} lire";
-                }
-                else
-                {
-                    message += " - senza prezzo";
-                }
+            string message = grabPrompt;
+            message += $"\n{item.itemName}";
+            message += item.HasPrice() ? $" - {item.assignedPrice} lire" : " - senza prezzo";
 
-                ShowPrompt(message);
-                return;
-            }
+            ShowPrompt(message);
+            return;
         }
 
         HidePrompt();
