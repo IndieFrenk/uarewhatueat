@@ -1,0 +1,43 @@
+newmtl legno_5f4128
+Kd 0.373 0.255 0.157
+map_Kd texture/legno.png
+newmtl legno_7a5a38
+Kd 0.478 0.353 0.220
+map_Kd texture/legno.png
+newmtl metallo_c8cdd0
+Kd 0.784 0.804 0.816
+map_Kd texture/metallo.png
+newmtl gomma_222426
+Kd 0.133 0.141 0.149
+map_Kd texture/gomma.png
+newmtl metallo_5a5f64
+Kd 0.353 0.373 0.392
+map_Kd texture/metallo.png
+newmtl metallo_3d4146
+Kd 0.239 0.255 0.275
+map_Kd texture/metallo.png
+newmtl liscio_e8e4d4
+Kd 0.910 0.894 0.831
+newmtl liscio_c2c2c2
+Kd 0.761 0.761 0.761
+newmtl liscio_d9534f
+Kd 0.851 0.325 0.310
+newmtl liscio_3bbf6a_e
+Kd 0.231 0.749 0.416
+Ke 0.231 0.749 0.416
+newmtl stampa_a_f4f1e6
+Kd 0.957 0.945 0.902
+map_Kd texture/stampa_a.png
+newmtl legno_c9b38a
+Kd 0.788 0.702 0.541
+map_Kd texture/legno.png
+newmtl liscio_ff7eb6
+Kd 1.000 0.494 0.714
+newmtl liscio_ffd23f
+Kd 1.000 0.824 0.247
+newmtl liscio_8be0ff
+Kd 0.545 0.878 1.000
+newmtl liscio_ff6a3d
+Kd 1.000 0.416 0.239
+newmtl liscio_b6f06a
+Kd 0.714 0.941 0.416

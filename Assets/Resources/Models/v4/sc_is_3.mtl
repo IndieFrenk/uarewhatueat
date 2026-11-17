@@ -1,0 +1,46 @@
+newmtl metallo_7a8288
+Kd 0.478 0.510 0.533
+map_Kd texture/metallo.png
+newmtl metallo_4f565c
+Kd 0.310 0.337 0.361
+map_Kd texture/metallo.png
+newmtl metallo_454b51
+Kd 0.271 0.294 0.318
+map_Kd texture/metallo.png
+newmtl metallo_a8afb3
+Kd 0.659 0.686 0.702
+map_Kd texture/metallo.png
+newmtl metallo_2f3438
+Kd 0.184 0.204 0.220
+map_Kd texture/metallo.png
+newmtl liscio_e8e4d4
+Kd 0.910 0.894 0.831
+newmtl stampa_a_f1f1f1
+Kd 0.945 0.945 0.945
+map_Kd texture/stampa_a.png
+newmtl stampa_a_ff6a3d
+Kd 1.000 0.416 0.239
+map_Kd texture/stampa_a.png
+newmtl stampa_a_ffe14a
+Kd 1.000 0.882 0.290
+map_Kd texture/stampa_a.png
+newmtl crosta_c98a45
+Kd 0.788 0.541 0.271
+map_Kd texture/crosta.png
+newmtl crosta_efd9a8
+Kd 0.937 0.851 0.659
+map_Kd texture/crosta.png
+newmtl erba_5a8a35
+Kd 0.353 0.541 0.208
+map_Kd texture/erba.png
+newmtl erba_7fae4a
+Kd 0.498 0.682 0.290
+map_Kd texture/erba.png
+newmtl crosta_d9b64a
+Kd 0.851 0.714 0.290
+map_Kd texture/crosta.png
+newmtl crosta_a8812c
+Kd 0.659 0.506 0.173
+map_Kd texture/crosta.png
+newmtl liscio_f0d878
+Kd 0.941 0.847 0.471

@@ -1,0 +1,24 @@
+newmtl legno_7a5a38
+Kd 0.478 0.353 0.220
+map_Kd texture/legno.png
+newmtl legno_5a4228
+Kd 0.353 0.259 0.157
+map_Kd texture/legno.png
+newmtl legno_6b4a2f
+Kd 0.420 0.290 0.184
+map_Kd texture/legno.png
+newmtl metallo_9aa1a6
+Kd 0.604 0.631 0.651
+map_Kd texture/metallo.png
+newmtl stampa_a_e8e4d4
+Kd 0.910 0.894 0.831
+map_Kd texture/stampa_a.png
+newmtl legno_3a2a1c
+Kd 0.227 0.165 0.110
+map_Kd texture/legno.png
+newmtl metallo_2a2a2a
+Kd 0.165 0.165 0.165
+map_Kd texture/metallo.png
+newmtl liscio_ffd9a0_e
+Kd 1.000 0.851 0.627
+Ke 1.000 0.851 0.627
