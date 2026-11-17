@@ -44,7 +44,7 @@ public class GameFlow : MonoBehaviour
     void Update()
     {
         if (s == null) return;
-        bool rest = IsRest(s.Phase) && !UIKit.MenuOpen;
+        bool rest = IsRest(s.Phase) && !UIKit.MenuOpen && !FPSController.InputBlocked;
         prompt.text = rest ? PromptFor(s.Phase) : "";
         if (rest && Input.GetKeyDown(KeyCode.N)) Next();
         float hour = cfg.currentHour + cfg.currentMinute / 60f;
