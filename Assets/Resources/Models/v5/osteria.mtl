@@ -1,0 +1,88 @@
+newmtl intonaco_caa97e
+Kd 0.792 0.663 0.494
+map_Kd texture/intonaco.png
+newmtl pietra_8d867a
+Kd 0.553 0.525 0.478
+map_Kd texture/pietra.png
+newmtl tegole_6a3f32
+Kd 0.416 0.247 0.196
+map_Kd texture/tegole.png
+newmtl metallo_6a6e72
+Kd 0.416 0.431 0.447
+map_Kd texture/metallo.png
+newmtl mattone_8a5a48
+Kd 0.541 0.353 0.282
+map_Kd texture/mattone.png
+newmtl cemento_8d8a82
+Kd 0.553 0.541 0.510
+map_Kd texture/cemento.png
+newmtl metallo_3a3d40
+Kd 0.227 0.239 0.251
+map_Kd texture/metallo.png
+newmtl legno_4a3326
+Kd 0.290 0.200 0.149
+map_Kd texture/legno.png
+newmtl legno_3a2418
+Kd 0.227 0.141 0.094
+map_Kd texture/legno.png
+newmtl insegna_d9c08a
+Kd 0.851 0.753 0.541
+map_Kd texture/insegna.png
+newmtl liscio_6a1f1a
+Kd 0.416 0.122 0.102
+newmtl metallo_2a2a2a
+Kd 0.165 0.165 0.165
+map_Kd texture/metallo.png
+newmtl liscio_fff0c8_e
+Kd 1.000 0.941 0.784
+Ke 1.000 0.941 0.784
+newmtl legno_6a3f32
+Kd 0.416 0.247 0.196
+map_Kd texture/legno.png
+newmtl pietra_a8a290
+Kd 0.659 0.635 0.565
+map_Kd texture/pietra.png
+newmtl legno_5b4030
+Kd 0.357 0.251 0.188
+map_Kd texture/legno.png
+newmtl metallo_c9a227
+Kd 0.788 0.635 0.153
+map_Kd texture/metallo.png
+newmtl pietra_9a9484
+Kd 0.604 0.580 0.518
+map_Kd texture/pietra.png
+newmtl pietra_aaa492
+Kd 0.667 0.643 0.573
+map_Kd texture/pietra.png
+newmtl vetro_f0c070_e
+Kd 0.941 0.753 0.439
+map_Kd texture/vetro.png
+Ke 0.941 0.753 0.439
+newmtl legno_e8e2d0
+Kd 0.910 0.886 0.816
+map_Kd texture/legno.png
+newmtl pietra_b8b2a0
+Kd 0.722 0.698 0.627
+map_Kd texture/pietra.png
+newmtl tessuto_c9503a
+Kd 0.788 0.314 0.227
+map_Kd texture/tessuto.png
+newmtl legno_6b4a2f
+Kd 0.420 0.290 0.184
+map_Kd texture/legno.png
+newmtl erba_4f8a3a
+Kd 0.310 0.541 0.227
+map_Kd texture/erba.png
+newmtl liscio_d94a5a
+Kd 0.851 0.290 0.353
+newmtl liscio_f2d21b
+Kd 0.949 0.824 0.106
+newmtl liscio_e8e4f0
+Kd 0.910 0.894 0.941
+newmtl vetro_252b33
+Kd 0.145 0.169 0.200
+map_Kd texture/vetro.png
+newmtl vetro_e8d6a0_e
+Kd 0.910 0.839 0.627
+map_Kd texture/vetro.png
+Ke 0.910 0.839 0.627
