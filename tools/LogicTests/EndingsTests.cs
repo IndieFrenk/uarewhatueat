@@ -88,12 +88,11 @@ static class EndingsTests
         s.SymbolFragments = GameState.FragmentsToDecode;
         Check(Endings.Body(Ending.Bitter, s).Contains("non commestibile"), "scritta decifrata");
 
-        // Dieta notturna: 2-3 voci dalle abitudini, fumo e alcol aggiunti, chi ha già mangiato non cambia
+        // Dieta notturna: 2-3 voci dalle abitudini (fumo e alcol li conta MarkRules), chi ha già mangiato non cambia
         var v = new Villager { Smoker = true, Drinker = true };
         v.Habits[FoodKind.Natural] = 1f;
         Night.FillDiet(v, new Random(3));
-        Check(v.EatenToday.Count == 4 || v.EatenToday.Count == 5, "dieta 2-3 voci + fumo + alcol");
-        Check(v.EatenToday.Contains(FoodKind.Tobacco) && v.EatenToday.Contains(FoodKind.Alcohol), "fumo e alcol");
+        Check(v.EatenToday.Count == 2 || v.EatenToday.Count == 3, "dieta 2-3 voci");
         Check(v.EatenToday.FindAll(k => k == FoodKind.Natural).Count >= 2, "pesca solo dalle abitudini");
         var w = new Villager(); w.Habits[FoodKind.Industrial] = 1f; w.EatenToday.Add(FoodKind.Natural);
         Night.FillDiet(w, new Random(3));

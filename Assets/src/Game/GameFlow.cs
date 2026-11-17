@@ -13,14 +13,7 @@ public class GameFlow : MonoBehaviour
     static void Make() => new GameObject(nameof(GameFlow)).AddComponent<GameFlow>();
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-    static void Hook()
-    {
-        GameBootstrap.Ready -= Make; GameBootstrap.Ready += Make;
-        // GameBootstrap azzera Ready quando viene distrutto: dopo "Ricomincia" bisogna riagganciarsi a ogni caricamento
-        SceneManager.sceneLoaded -= OnLoaded; SceneManager.sceneLoaded += OnLoaded;
-    }
-
-    static void OnLoaded(Scene scene, LoadSceneMode mode) { GameBootstrap.Ready -= Make; GameBootstrap.Ready += Make; }
+    static void Hook() => GameBootstrap.Ready += Make;
 
     GameState s;
     GlobalConfig cfg;
@@ -199,7 +192,7 @@ public class GameFlow : MonoBehaviour
                 CloseBlackout();
                 s.Day++;
                 cfg.NextDay();
-                Enter(s.Daughter.Taken || s.Day > GameState.LastDay ? GamePhase.Ending : GamePhase.Morning);
+                Enter(s.Daughter.Taken || s.Protagonist.Taken || s.Day > GameState.LastDay ? GamePhase.Ending : GamePhase.Morning);
             });
     }
 

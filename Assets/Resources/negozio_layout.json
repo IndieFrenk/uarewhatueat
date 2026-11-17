@@ -1,0 +1,439 @@
+{
+ "unita": "metri",
+ "ostacoli_xz": [
+  [
+   0,
+   1.6,
+   0.52,
+   7.6
+  ],
+  [
+   1.55,
+   2.6,
+   2.45,
+   5.6
+  ],
+  [
+   4.1,
+   2.7,
+   5.0,
+   5.2
+  ],
+  [
+   4.1,
+   0.3,
+   4.9,
+   1.9
+  ],
+  [
+   0.6,
+   7.45,
+   5.0,
+   7.9
+  ],
+  [
+   0.7,
+   0.9,
+   1.5,
+   1.5
+  ],
+  [
+   0,
+   7.9,
+   5.05,
+   8.1
+  ],
+  [
+   5.95,
+   7.9,
+   6,
+   8.1
+  ],
+  [
+   0,
+   8.1,
+   0.55,
+   11.3
+  ],
+  [
+   0.6,
+   10.95,
+   2.1,
+   11.5
+  ],
+  [
+   5.1,
+   8.3,
+   6,
+   9.0
+  ],
+  [
+   5.3,
+   9.5,
+   6,
+   10.9
+  ],
+  [
+   1.2,
+   8.5,
+   2.4,
+   9.3
+  ],
+  [
+   2.6,
+   8.5,
+   3.8,
+   9.3
+  ],
+  [
+   2.4,
+   9.8,
+   3.6,
+   10.6
+  ]
+ ],
+ "istanze": [
+  {
+   "in": "negozio_interno",
+   "modello": "porta_magazzino",
+   "x": 5.07,
+   "y": 0,
+   "z": 7.92,
+   "rotY": -70,
+   "scala": 1.0
+  },
+  {
+   "in": "negozio_interno",
+   "modello": "porta_vetro",
+   "x": 3.5,
+   "y": 0,
+   "z": 0.02,
+   "rotY": 95,
+   "scala": 1.0
+  },
+  {
+   "in": "negozio_interno",
+   "modello": "cestone_vetrina",
+   "x": 0.5,
+   "y": 0.9,
+   "z": 0.0,
+   "rotY": 0.0,
+   "scala": 0.8
+  },
+  {
+   "in": "negozio_interno",
+   "modello": "sc_dx_0",
+   "x": 0.03,
+   "y": 0,
+   "z": 3.1,
+   "rotY": 90,
+   "scala": 1.0
+  },
+  {
+   "in": "negozio_interno",
+   "modello": "sc_dx_1",
+   "x": 0.03,
+   "y": 0,
+   "z": 4.6,
+   "rotY": 90,
+   "scala": 1.0
+  },
+  {
+   "in": "negozio_interno",
+   "modello": "sc_dx_2",
+   "x": 0.03,
+   "y": 0,
+   "z": 6.1,
+   "rotY": 90,
+   "scala": 1.0
+  },
+  {
+   "in": "negozio_interno",
+   "modello": "sc_dx_3",
+   "x": 0.03,
+   "y": 0,
+   "z": 7.6,
+   "rotY": 90,
+   "scala": 1.0
+  },
+  {
+   "in": "negozio_interno",
+   "modello": "sc_fo_0",
+   "x": 2.1,
+   "y": 0,
+   "z": 7.895,
+   "rotY": 180,
+   "scala": 1.0
+  },
+  {
+   "in": "negozio_interno",
+   "modello": "sc_fo_1",
+   "x": 3.6,
+   "y": 0,
+   "z": 7.895,
+   "rotY": 180,
+   "scala": 1.0
+  },
+  {
+   "in": "negozio_interno",
+   "modello": "sc_pane",
+   "x": 5.0,
+   "y": 0,
+   "z": 7.895,
+   "rotY": 180,
+   "scala": 1.0
+  },
+  {
+   "in": "negozio_interno",
+   "modello": "sc_is_0",
+   "x": 2.0,
+   "y": 0,
+   "z": 2.6,
+   "rotY": -90,
+   "scala": 1.0
+  },
+  {
+   "in": "negozio_interno",
+   "modello": "sc_is_1",
+   "x": 2.0,
+   "y": 0,
+   "z": 4.1,
+   "rotY": -90,
+   "scala": 1.0
+  },
+  {
+   "in": "negozio_interno",
+   "modello": "sc_is_2",
+   "x": 2.0,
+   "y": 0,
+   "z": 5.6,
+   "rotY": 90,
+   "scala": 1.0
+  },
+  {
+   "in": "negozio_interno",
+   "modello": "sc_is_3",
+   "x": 2.0,
+   "y": 0,
+   "z": 4.1,
+   "rotY": 90,
+   "scala": 1.0
+  },
+  {
+   "in": "negozio_interno",
+   "modello": "banco_affettati",
+   "x": 4.1,
+   "y": 0,
+   "z": 2.7,
+   "rotY": 0.0,
+   "scala": 1.0
+  },
+  {
+   "in": "negozio_interno",
+   "modello": "cassa",
+   "x": 4.1,
+   "y": 0,
+   "z": 0.3,
+   "rotY": 0.0,
+   "scala": 1.0
+  },
+  {
+   "in": "negozio_interno",
+   "modello": "sgabello",
+   "x": 5.45,
+   "y": 0,
+   "z": 1.1,
+   "rotY": 0.0,
+   "scala": 1.0
+  },
+  {
+   "in": "negozio_interno",
+   "modello": "cestone_ingresso",
+   "x": 0.7,
+   "y": 0,
+   "z": 0.9,
+   "rotY": 10,
+   "scala": 1.0
+  },
+  {
+   "in": "negozio_interno",
+   "modello": "scatola_2",
+   "x": 5.9,
+   "y": 1.34,
+   "z": 4.6,
+   "rotY": 0.0,
+   "scala": 1.0
+  },
+  {
+   "in": "negozio_interno",
+   "modello": "scatola_2",
+   "x": 5.9,
+   "y": 1.34,
+   "z": 5.2,
+   "rotY": 0.0,
+   "scala": 1.0
+  },
+  {
+   "in": "negozio_interno",
+   "modello": "scatola_2",
+   "x": 5.9,
+   "y": 1.34,
+   "z": 5.8,
+   "rotY": 0.0,
+   "scala": 1.0
+  },
+  {
+   "in": "negozio_interno",
+   "modello": "scatola_2",
+   "x": 5.9,
+   "y": 1.34,
+   "z": 6.4,
+   "rotY": 0.0,
+   "scala": 1.0
+  },
+  {
+   "in": "negozio_interno",
+   "modello": "scatola_2",
+   "x": 5.9,
+   "y": 1.34,
+   "z": 7.0,
+   "rotY": 0.0,
+   "scala": 1.0
+  },
+  {
+   "in": "negozio_interno",
+   "modello": "magazzino",
+   "x": 0.0,
+   "y": 0.0,
+   "z": 0.0,
+   "rotY": 0.0,
+   "scala": 1.0
+  },
+  {
+   "in": "magazzino",
+   "modello": "serranda",
+   "x": 2.2,
+   "y": 0,
+   "z": 11.46,
+   "rotY": 0.0,
+   "scala": 1.0
+  },
+  {
+   "in": "magazzino",
+   "modello": "rack_mag_dx0",
+   "x": 0.03,
+   "y": 0,
+   "z": 9.8,
+   "rotY": 90,
+   "scala": 1.0
+  },
+  {
+   "in": "magazzino",
+   "modello": "rack_mag_dx1",
+   "x": 0.03,
+   "y": 0,
+   "z": 11.3,
+   "rotY": 90,
+   "scala": 1.0
+  },
+  {
+   "in": "magazzino",
+   "modello": "rack_mag_fo",
+   "x": 2.1,
+   "y": 0,
+   "z": 11.45,
+   "rotY": 180,
+   "scala": 1.0
+  },
+  {
+   "in": "magazzino",
+   "modello": "scrivania_mag",
+   "x": 5.1,
+   "y": 0,
+   "z": 8.3,
+   "rotY": 0.0,
+   "scala": 1.0
+  },
+  {
+   "in": "magazzino",
+   "modello": "sgabello",
+   "x": 4.6,
+   "y": 0,
+   "z": 8.7,
+   "rotY": 0.0,
+   "scala": 1.0
+  },
+  {
+   "in": "magazzino",
+   "modello": "congelatore",
+   "x": 5.3,
+   "y": 0,
+   "z": 9.5,
+   "rotY": 90,
+   "scala": 1.0
+  },
+  {
+   "in": "magazzino",
+   "modello": "bancale_c0",
+   "x": 1.8,
+   "y": 0,
+   "z": 8.9,
+   "rotY": 0,
+   "scala": 1.0
+  },
+  {
+   "in": "magazzino",
+   "modello": "bancale_c1",
+   "x": 3.2,
+   "y": 0,
+   "z": 8.9,
+   "rotY": 10,
+   "scala": 1.0
+  },
+  {
+   "in": "magazzino",
+   "modello": "bancale_c2",
+   "x": 3.0,
+   "y": 0,
+   "z": 10.2,
+   "rotY": -8,
+   "scala": 1.0
+  },
+  {
+   "in": "magazzino",
+   "modello": "sacchi",
+   "x": 4.1,
+   "y": 0,
+   "z": 10.7,
+   "rotY": 20,
+   "scala": 1.0
+  },
+  {
+   "in": "magazzino",
+   "modello": "carrello_mano",
+   "x": 4.4,
+   "y": 0,
+   "z": 9.9,
+   "rotY": 35,
+   "scala": 1.0
+  },
+  {
+   "in": "magazzino",
+   "modello": "scatola_1",
+   "x": 1.3,
+   "y": 0,
+   "z": 8.5,
+   "rotY": 0.0,
+   "scala": 1.0
+  },
+  {
+   "in": "magazzino",
+   "modello": "scatola_0",
+   "x": 1.3,
+   "y": 0.3,
+   "z": 8.5,
+   "rotY": 12,
+   "scala": 1.0
+  }
+ ]
+}

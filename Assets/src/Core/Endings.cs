@@ -16,7 +16,7 @@ public static class Endings
 
     public static Ending Evaluate(GameState s)
     {
-        if (s.Daughter.Taken) return Ending.Loss;
+        if (s.Daughter.Taken || s.Protagonist.Taken) return Ending.Loss; // senza il padre la figlia resta sola
         int n = s.Villagers.Count;
         float taken = n == 0 ? 0 : s.Villagers.Count(v => v.Taken) / (float)n;
         float boycott = n == 0 ? 0 : s.Villagers.Count(v => v.Derided) / (float)n;

@@ -5,8 +5,17 @@ static class Program
 {
     static int Main()
     {
-        EndingsTests.Run();
-        Console.WriteLine("LogicTests: ok.");
-        return 0;
+        try
+        {
+            RulesTests.Run();
+            DataTests.Run();
+            EndingsTests.Run();
+            return 0;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"ERRORE: {e.Message}");
+            return 1;
+        }
     }
 }

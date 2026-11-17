@@ -21,14 +21,12 @@ public static class Night
         return last;
     }
 
-    /// <summary>Chi oggi non ha comprato nulla mangia secondo le sue abitudini (2-3 voci), più fumo/alcol.</summary>
+    /// <summary>Chi oggi non ha comprato nulla mangia secondo le sue abitudini (2-3 voci).</summary>
     public static void FillDiet(Villager v, Random rng)
     {
         if (v.EatenToday.Count > 0) return;
         int n = rng.Next(2, 4);
-        for (int i = 0; i < n; i++) v.EatenToday.Add(Pick(v, rng));
-        if (v.Smoker) v.EatenToday.Add(FoodKind.Tobacco);
-        if (v.Drinker) v.EatenToday.Add(FoodKind.Alcohol);
+        for (int i = 0; i < n; i++) v.EatenToday.Add(Pick(v, rng)); // fumo e alcol abituali li conta già MarkRules.ApplyDay
     }
 
     /// <summary>Notte intera: ritorna i paesani presi stanotte (già marcati Taken e notificati).</summary>
