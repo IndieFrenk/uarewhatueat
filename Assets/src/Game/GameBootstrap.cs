@@ -24,5 +24,8 @@ public class GameBootstrap : MonoBehaviour
         Ready?.Invoke();
     }
 
-    void OnDestroy() => Ready = null; // con il domain reload disattivato gli iscritti resterebbero doppi
+    // Gira a ogni ingresso in Play prima degli Hook: con il domain reload disattivato evita iscritti doppi.
+    // Non si azzera in OnDestroy, così "Ricomincia" (ricarica della scena) riaggancia tutti i sistemi.
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void ResetHooks() => Ready = null;
 }

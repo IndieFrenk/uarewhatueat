@@ -9,6 +9,7 @@ static class Program
         {
             RulesTests.Run();
             DataTests.Run();
+            EndingsTests.Run();
             return 0;
         }
         catch (Exception e)

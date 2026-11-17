@@ -114,6 +114,9 @@ public class GlobalConfig : MonoBehaviour
     [Tooltip("Risparmi di partenza in lire (la X della trama)")]
     public int startingSavings = 500000;
 
+    [Header("=== FLUSSO GIORNATA ===")]
+    [Tooltip("Oltre questa distanza dal punto d'ingresso del negozio, all'apertura compare 'vai al negozio' (metri)")]
+    public float shopFarDistance = 15f;
     [Header("=== MONDO ===")]
     [Tooltip("Durata (s) di ciascuna metà della dissolvenza nera quando si attraversa una porta")]
     public float doorFadeSeconds = 0.35f;
