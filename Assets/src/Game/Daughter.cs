@@ -1,213 +1,119 @@
-using System;
-using System.Linq;
 using UnityEngine;
 
 /// <summary>
-/// Giulia, la figlia del protagonista. Mangia dolci di nascosto, il marchio sbiadisce gradualmente.
-/// Interactable per parlare con lei e ricevere segnali della sua condizione.
+/// Giulia, la figlia. Mangia dolci di nascosto (più se ci sono in negozio e se il padre la lascia sola),
+/// lascia segnali al mattino, e dal giorno 3 regala disegni delle fronti (pezzi della scritta).
 /// </summary>
 public class Daughter : Interactable
 {
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     static void Hook() => GameBootstrap.Ready += () => new GameObject(nameof(Daughter)).AddComponent<Daughter>();
 
-    private Villager data;
-    private int lastDrawnDay;
-    private int drawingsGiven;
+    GameState s;
+    int sweetsLastNight, sweetsTotal, fruitDay, drawings;
+
+    Villager Data => s.Daughter;
 
     void Start()
     {
-        // Filla il GameObject e crea la capsula
-        gameObject.name = nameof(Daughter);
+        s = GameState.Current;
         if (WorldAnchors.HomeSpawn == null) { Destroy(gameObject); return; }
-
-        // Crea capsula segnaposto (1.2m)
-        var col = gameObject.AddComponent<CapsuleCollider>();
-        col.height = 1.2f;
-        col.radius = 0.3f;
-        col.isTrigger = true;
-
-        gameObject.AddComponent<Rigidbody>().isKinematic = true;
-        gameObject.transform.position = WorldAnchors.HomeSpawn.position + Vector3.forward * 0.5f;
-
-        // Iscriviti ai segnali di gioco
-        GameState.Current.DayEnding += OnDayEnding;
-        GameState.Current.PhaseChanged += OnPhaseChanged;
+        // segnaposto: capsula da bambina, 1.2 m
+        var body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+        body.transform.SetParent(transform, false);
+        body.transform.localScale = new Vector3(0.45f, 0.6f, 0.45f);
+        body.transform.localPosition = Vector3.up * 0.6f;
+        body.GetComponent<Renderer>().material.color = new Color(0.85f, 0.6f, 0.55f);
+        transform.position = WorldAnchors.HomeSpawn.position + new Vector3(-1.5f, 0f, 1.8f);
+        s.DayEnding += OnDayEnding;
+        s.PhaseChanged += OnPhase;
     }
 
     void OnDestroy()
     {
-        if (GameState.Current != null)
-        {
-            GameState.Current.DayEnding -= OnDayEnding;
-            GameState.Current.PhaseChanged -= OnPhaseChanged;
-        }
+        if (s == null) return;
+        s.DayEnding -= OnDayEnding;
+        s.PhaseChanged -= OnPhase;
     }
 
-    // --- Interactable ---
-
     public override string Prompt => "Parla con Giulia";
-    public override bool CanInteract => GameState.Current?.Daughter != null;
+    public override bool CanInteract => Data != null && !Data.Taken && s.Phase != GamePhase.Night;
 
     public override void Interact()
     {
-        data = GameState.Current.Daughter;
-        if (data == null) return;
-
-        string body = DescribeDaughter();
-        string[] options = new string[]
+        UIKit.Choices("Giulia", Mood(), new[] { "Guardale la fronte", "Chiedile cosa ha mangiato", "Dalle un frutto", "Chiudi" }, i =>
         {
-            "Guardale la fronte",
-            "Chiedile cosa ha mangiato",
-            data.EatenToday.Count > 0 && GameState.Current.Day >= GlobalConfig.Instance.daughterDrawStartDay
-                ? $"Le dai un frutto ({GetDaysWithoutFruit()} dai ultimi)" : "Le dai un frutto",
-            "Chiudi"
-        };
-
-        UIKit.Choices("Giulia", body, options, idx =>
-        {
-            switch (idx)
-            {
-                case 0: DescribeForehead(); break;
-                case 1: AskWhatAte(); break;
-                case 2: GiveFruit(); break;
-            }
+            if (i == 0) UIKit.Toast(Forehead(Data.Mark), 5f);
+            else if (i == 1) UIKit.Toast(WhatAte(), 5f);
+            else if (i == 2) GiveFruit();
         });
     }
 
-    // --- Dialogo ---
-
-    private string DescribeDaughter()
+    string Mood()
     {
-        if (data == null) return "Non è qui.";
-
-        return $"È mattina. Giulia sembra... " + (GameState.Current.NightsDaughterAlone > 0 ? "triste, " : "normale, ") +
-            (data.EatenToday.Any(k => k == FoodKind.Industrial) ? "con le guance macchiate." : "in ordine.");
+        int nightsHome = s.Day - 1 - s.NightsDaughterAlone;
+        string mood = s.NightsDaughterAlone > nightsHome ? "Non ti guarda quasi. Ti aspettava ieri sera." : "Ti racconta della scuola, a pezzi.";
+        return $"Giulia, otto anni. {mood}";
     }
 
-    private void DescribeForehead()
-    {
-        if (data == null) return;
+    static string Forehead(float mark) =>
+        mark >= 0.7f ? "Il segno è netto, scuro, come disegnato col pennino." :
+        mark >= 0.5f ? "Il segno c'è, ma è più chiaro di ieri." :
+        mark >= MarkRules.VisibleThreshold ? "Il segno è quasi sparito. Devi avvicinarti per vederlo." :
+        "Non c'è più. La fronte è liscia, pulita. Troppo pulita.";
 
-        string desc = data.Mark switch
+    string WhatAte()
+    {
+        if (sweetsLastNight == 0) return "«La pasta, papà. E basta.» Ti sembra vero.";
+        int nightsHome = s.Day - 1 - s.NightsDaughterAlone;
+        bool sincere = s.Day >= GlobalConfig.Instance.daughterHonestDay && nightsHome >= GlobalConfig.Instance.daughterNightsHome;
+        return sincere
+            ? "Abbassa gli occhi. «Le merendine dello scaffale in fondo. Le prendo quando tu sei al bar.»"
+            : "«Niente.» Si pulisce le dita sulla gonna, in fretta.";
+    }
+
+    void GiveFruit()
+    {
+        if (fruitDay == s.Day) { UIKit.Toast("Ne ha già avuto uno oggi. Lo tiene sul comodino."); return; }
+        fruitDay = s.Day;
+        Data.EatenToday.Add(FoodKind.Natural);
+        UIKit.Toast("Le dai una mela. La mangia piano, guardandoti.");
+        if (s.Day >= GlobalConfig.Instance.daughterDrawStartDay && drawings < 3
+            && s.Rng.NextDouble() < GlobalConfig.Instance.daughterDrawProbability
+            && Story.AddFragment("disegno di Giulia " + (drawings + 1)))
         {
-            >= 0.8f => "Un segno netto sulla sua fronte, come inchiostro blu.",
-            >= 0.5f => "Il segno è ancora lì, ma più chiaro di ieri.",
-            >= 0.35f => "Il marchio quasi sparito, pelle quasi normale.",
-            _ => "Niente. La sua fronte è pulita, come sempre.",
-        };
-
-        UIKit.Toast(desc, 3f);
-    }
-
-    private void AskWhatAte()
-    {
-        if (data == null) return;
-
-        bool ateSweets = data.EatenToday.Any(k => k == FoodKind.Industrial);
-        bool shouldBeSincere = GameState.Current.Day >= GlobalConfig.Instance.daughterHonestDay
-            && (GameState.LastDay - GameState.Current.Day) >= GlobalConfig.Instance.daughterNightsHome;
-
-        string answer = ateSweets && !shouldBeSincere
-            ? "Niente, papà. Ho mangiato verdure."
-            : ateSweets && shouldBeSincere
-                ? "Ho mangiato dolci dal negozio. Scusami, ma mi piacevano..."
-                : "Ho mangiato bene oggi.";
-
-        UIKit.Toast(answer, 4f);
-    }
-
-    private void GiveFruit()
-    {
-        if (data == null) return;
-
-        data.EatenToday.Add(FoodKind.Natural);
-        UIKit.Toast("Le dai un frutto. Sorride.", 2f);
-
-        // Probabilità di ricevere un disegno
-        if (GameState.Current.Day >= GlobalConfig.Instance.daughterDrawStartDay
-            && GameState.Current.Rng.NextDouble() < GlobalConfig.Instance.daughterDrawProbability)
-        {
-            ReceiveDrawing();
+            drawings++;
+            s.Clues.Add("disegno_giulia");
+            UIKit.Toast("Ti dà un disegno: la fronte della maestra, con dei segni copiati con cura.", 5f);
         }
     }
 
-    private void ReceiveDrawing()
+    void OnDayEnding()
     {
-        GameState.Current.SymbolFragments++;
-        drawingsGiven++;
-
-        string drawing = drawingsGiven switch
-        {
-            1 => "Un disegno della fronte di qualcuno: segni blu confusi.",
-            2 => "Un altro disegno, più nitido. I segni sembrano lettere.",
-            3 => "Un terzo disegno. Riconosci parte di una parola.",
-            _ => "Un altro pezzetto della scritta."
-        };
-
-        UIKit.Toast($"Giulia: '{drawing}'", 3f);
+        sweetsLastNight = 0;
+        if (Data == null || Data.Taken) return;
+        bool sweetsInShop = false;
+        foreach (var kv in s.Stock)
+            if (kv.Value > 0 && Catalog.Get(kv.Key)?.Sweet == true) { sweetsInShop = true; break; }
+        if (!sweetsInShop) return;
+        float p = GlobalConfig.Instance.daughterSweetProbability + 0.1f * s.NightsDaughterAlone;
+        if (s.Rng.NextDouble() >= p) return;
+        sweetsLastNight = s.Rng.Next(1, GlobalConfig.Instance.daughterSweets + 2);
+        sweetsTotal += sweetsLastNight;
+        for (int i = 0; i < sweetsLastNight; i++) Data.EatenToday.Add(FoodKind.Industrial);
     }
 
-    private int GetDaysWithoutFruit()
+    static readonly string[] signs =
     {
-        // Semplice: quanti giorni da quando l'ultima volta
-        return Math.Max(1, GameState.Current.Day - lastDrawnDay);
-    }
+        "Nello zaino di Giulia: carte di caramelle, piegate piccole piccole.",
+        "La scatola delle merendine in magazzino è più leggera di ieri.",
+        "Sul cuscino di Giulia, briciole di cioccolato.",
+    };
 
-    // --- Eventi ---
-
-    private void OnDayEnding()
+    void OnPhase(GamePhase p)
     {
-        if (data == null) data = GameState.Current.Daughter;
-        if (data == null) return;
-
-        // La figlia mangia dolci di nascosto con probabilità crescente
-        if (ShouldEatSweets())
-        {
-            int quantity = GameState.Current.Rng.Next(1, 3);
-            for (int i = 0; i < quantity; i++)
-                data.EatenToday.Add(FoodKind.Industrial);
-        }
-    }
-
-    private bool ShouldEatSweets()
-    {
-        // Ci sono dolci in negozio?
-        bool hasSweets = false;
-        foreach (var kv in GameState.Current.Stock)
-        {
-            var prod = Catalog.Get(kv.Key);
-            if (prod != null && prod.Sweet && kv.Value > 0)
-            {
-                hasSweets = true;
-                break;
-            }
-        }
-
-        if (!hasSweets) return false;
-
-        // Probabilità che mangi di nascosto, cresce se sola
-        float prob = GlobalConfig.Instance.daughterSweetProbability;
-        if (GameState.Current.NightsDaughterAlone > 0)
-            prob += 0.1f * GameState.Current.NightsDaughterAlone;
-
-        return GameState.Current.Rng.NextDouble() < prob;
-    }
-
-    private void OnPhaseChanged(GamePhase phase)
-    {
-        if (phase != GamePhase.Morning || data == null) data = GameState.Current.Daughter;
-        if (phase != GamePhase.Morning) return;
-
-        // Mostra segnali al mattino
-        if (data.Mark < 0.35f && lastDrawnDay != GameState.Current.Day)
-        {
-            UIKit.Toast("Noti che il marchio di Giulia si sbiadisce.", 3f);
-            lastDrawnDay = GameState.Current.Day;
-        }
-
-        // Toast se ha mangiato dolci
-        if (data.EatenToday.Any(k => k == FoodKind.Industrial))
-            UIKit.Toast("Trovi wrapper di caramelle nello zaino di Giulia.", 3f);
+        if (p != GamePhase.Morning || Data == null || Data.Taken) return;
+        if (sweetsLastNight > 0) UIKit.Toast(signs[(sweetsTotal - 1) % signs.Length], 6f);
+        else if (!Data.HasVisibleMark) UIKit.Toast("Giulia dorme ancora. Le guardi la fronte: niente segno.", 6f);
     }
 }

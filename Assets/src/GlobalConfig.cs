@@ -46,7 +46,7 @@ public class GlobalConfig : MonoBehaviour
     public float maxWaitTimeBeforeQueue = 2f;
     
     [Tooltip("Tempo massimo di attesa in fila (minuti di gioco)")]
-    public float maxWaitTimeInQueue = 3f;
+    public float maxWaitTimeInQueue = 20f;
     
     [Tooltip("Distanza massima per interagire con NPC")]
     public float interactionDistance = 3f;
@@ -132,6 +132,66 @@ public class GlobalConfig : MonoBehaviour
 
     [Tooltip("Giorno da cui la figlia inizia a disegnare")]
     public int daughterDrawStartDay = 3;
+    [Header("=== CAMION ===")]
+    [Tooltip("Sconto per i prodotti industriali al camion")]
+    public float truckDiscountIndustrial = 0.2f;
+
+    [Tooltip("Pezzi per ordine")]
+    public int truckOrderQuantity = 5;
+    [Header("=== CLIENTI ===")]
+    [Tooltip("Secondi reali minimi tra un ingresso e l'altro")]
+    public float customerSpawnMin = 15f;
+
+    [Tooltip("Secondi reali massimi tra un ingresso e l'altro")]
+    public float customerSpawnMax = 35f;
+
+    [Tooltip("Clienti contemporanei nel negozio")]
+    public int maxCustomersInShop = 4;
+
+    [Tooltip("Velocità di camminata dei clienti (m/s)")]
+    public float customerSpeed = 1.6f;
+    [Header("=== FLUSSO GIORNATA ===")]
+    [Tooltip("Oltre questa distanza dal punto d'ingresso del negozio, all'apertura compare 'vai al negozio' (metri)")]
+    public float shopFarDistance = 15f;
+    [Header("=== MONDO ===")]
+    [Tooltip("Durata (s) di ciascuna metà della dissolvenza nera quando si attraversa una porta")]
+    public float doorFadeSeconds = 0.35f;
+
+    [Tooltip("Intensità delle luci a soffitto (negozio, casa, bar)")]
+    public float shopLightIntensity = 2f;
+
+    [Tooltip("Raggio delle luci a soffitto")]
+    public float shopLightRange = 7f;
+
+    [Tooltip("Intensità dei lampioni della piazza")]
+    public float streetLampIntensity = 3f;
+    [Header("=== ATMOSFERA ===")]
+    [Tooltip("Densità minima nebbia (sera/notte)")]
+    public float fogDensityMin = 0.01f;
+
+    [Tooltip("Densità massima nebbia (notte profonda)")]
+    public float fogDensityMax = 0.05f;
+
+    [Tooltip("Moltiplicatore densità nebbia per ogni giorno passato")]
+    public float fogDensityDayMultiplier = 0.005f;
+
+    [Tooltip("Probabilità tremolio luci negozio (0-1)")]
+    public float shopLightFlickerChance = 0.04f;
+
+    [Tooltip("Durata del tremolio in secondi")]
+    public float shopLightFlickerDuration = 0.1f;
+
+    [Tooltip("Moltiplicatore frequenza tremolio dal giorno 3+")]
+    public float flickerFrequencyMultiplierDay3Plus = 2f;
+
+    [Tooltip("Intensità della luce nel cielo per le prese")]
+    public float skyLightIntensity = 3f;
+
+    [Tooltip("Durata della luce nel cielo in secondi")]
+    public float skyLightDuration = 3f;
+
+    [Tooltip("Clip audio opzionale per le notti di presa")]
+    public AudioClip humClip;
 
     // VARIABILI RUNTIME (non modificabili dall'inspector)
     [HideInInspector] public float currentHour = 7f;
