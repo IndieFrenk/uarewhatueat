@@ -208,7 +208,7 @@ public class GameFlow : MonoBehaviour
     {
         var e = Endings.Evaluate(s);
         Blackout();
-        UIKit.Choices(Endings.Title(e), Endings.Body(e, s), new[] { "Ricomincia" }, _ =>
+        UIKit.Choices(Endings.Title(e), Endings.Body(e, s) + "\n\n" + Canolo.Credit, new[] { "Ricomincia" }, _ =>
         {
             TimeManager.Paused = false;
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
