@@ -1,0 +1,14 @@
+newmtl metallo_3a7a45
+Kd 0.227 0.478 0.271
+map_Kd texture/metallo.png
+newmtl metallo_2f6639
+Kd 0.184 0.400 0.224
+map_Kd texture/metallo.png
+newmtl gomma_2a2d30
+Kd 0.165 0.176 0.188
+map_Kd texture/gomma.png
+newmtl gomma_1b1b1b
+Kd 0.106 0.106 0.106
+map_Kd texture/gomma.png
+newmtl liscio_e6e0d0
+Kd 0.902 0.878 0.816

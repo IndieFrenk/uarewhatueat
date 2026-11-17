@@ -1,0 +1,15 @@
+newmtl selciato_8a867a
+Kd 0.541 0.525 0.478
+map_Kd texture/selciato.png
+newmtl selciato_74716a
+Kd 0.455 0.443 0.416
+map_Kd texture/selciato.png
+newmtl selciato_918d82
+Kd 0.569 0.553 0.510
+map_Kd texture/selciato.png
+newmtl selciato_7f7b70
+Kd 0.498 0.482 0.439
+map_Kd texture/selciato.png
+newmtl pietra_a8a496
+Kd 0.659 0.643 0.588
+map_Kd texture/pietra.png
