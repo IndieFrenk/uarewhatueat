@@ -17,8 +17,9 @@ public class HUD : MonoBehaviour
     void OnEnable()
     {
         UIKit.Ensure();
-        hudContainer = new GameObject("HUDContainer");
+        hudContainer = new GameObject("HUDContainer", typeof(RectTransform));
         hudContainer.transform.SetParent(UIKit.I.Canvas.transform, false);
+        UIKit.Place((RectTransform)hudContainer.transform, Vector2.zero, Vector2.one);
 
         // Alto sinistra: giorno
         dayLabel = UIKit.Label(hudContainer.transform, "", 24, TextAnchor.UpperLeft);
@@ -83,10 +84,6 @@ public class HUD : MonoBehaviour
             interactionPrompt.text = "";
     }
 
-    string FormatMoney(int value)
-    {
-        if (value < 1000)
-            return value.ToString();
-        return (value / 1000).ToString() + "." + (value % 1000).ToString("D3");
-    }
+    static readonly System.Globalization.CultureInfo it = System.Globalization.CultureInfo.GetCultureInfo("it-IT");
+    string FormatMoney(int value) => value.ToString("N0", it);
 }
