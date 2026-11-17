@@ -114,6 +114,18 @@ public class GlobalConfig : MonoBehaviour
     [Tooltip("Risparmi di partenza in lire (la X della trama)")]
     public int startingSavings = 500000;
 
+    [Header("=== MONDO ===")]
+    [Tooltip("Durata (s) di ciascuna metà della dissolvenza nera quando si attraversa una porta")]
+    public float doorFadeSeconds = 0.35f;
+
+    [Tooltip("Intensità delle luci a soffitto (negozio, casa, bar)")]
+    public float shopLightIntensity = 2f;
+
+    [Tooltip("Raggio delle luci a soffitto")]
+    public float shopLightRange = 7f;
+
+    [Tooltip("Intensità dei lampioni della piazza")]
+    public float streetLampIntensity = 3f;
     [Header("=== ATMOSFERA ===")]
     [Tooltip("Densità minima nebbia (sera/notte)")]
     public float fogDensityMin = 0.01f;
