@@ -1,17 +1,21 @@
-﻿using UnityEngine;
+using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
-/// Simple shop item that can be grabbed, placed, and priced
+/// Prodotto fisico del negozio: si prende, si posa sullo scaffale, ha un prezzo in lire.
+/// Il legame col catalogo è productId (Catalog.Get). Prezzo assegnato = prezzo di vendita.
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(Collider))]
 public class ShopItem : MonoBehaviour
 {
+    /// <summary>Tutti i prodotti attivi nel mondo (i disattivati, es. nel carrello di un cliente, non ci sono).</summary>
+    public static readonly List<ShopItem> All = new List<ShopItem>();
+
     [Header("Item Info")]
-    public string itemName = "Product";
-    public string barcode = "";
-    public float basePrice = 1.0f;
-    public float assignedPrice = 0f;
+    public string productId = "";
+    public string itemName = "Prodotto";
+    public int assignedPrice = 0; // lire, 0 = nessun prezzo
 
     [Header("State")]
     public bool isBeingHeld = false;
@@ -20,117 +24,90 @@ public class ShopItem : MonoBehaviour
     private Rigidbody rb;
     private Collider col;
 
+    public Product Product => string.IsNullOrEmpty(productId) ? null : Catalog.Get(productId);
+
+    void OnEnable() => All.Add(this);
+    void OnDisable() => All.Remove(this);
+
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
-        
-        if (string.IsNullOrEmpty(barcode))
-        {
-            barcode = Random.Range(100000000, 999999999).ToString();
-        }
-
-        // Ensure correct setup
-        if (rb != null)
-        {
-            rb.interpolation = RigidbodyInterpolation.Interpolate;
-            rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
-        }
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+        rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
     }
 
-    /// <summary>
-    /// Called when grabbed by player
-    /// </summary>
+    /// <summary>Crea un prodotto segnaposto: forma e colore dipendono dal tipo.</summary>
+    public static ShopItem Spawn(Product p, Vector3 pos)
+    {
+        PrimitiveType shape = PrimitiveType.Cube;
+        Vector3 size = new Vector3(0.18f, 0.18f, 0.18f);
+        Color color = new Color(0.3f, 0.75f, 0.3f); // naturale: verde
+        if (p.Kind == FoodKind.Alcohol) { shape = PrimitiveType.Cylinder; size = new Vector3(0.07f, 0.13f, 0.07f); color = new Color(0.4f, 0.22f, 0.1f); }
+        else if (p.Kind == FoodKind.Tobacco) { size = new Vector3(0.08f, 0.12f, 0.03f); color = Color.white; }
+        else if (p.Sweet) { size = new Vector3(0.14f, 0.14f, 0.14f); color = new Color(1f, 0.6f, 0.75f); }
+        else if (p.Kind == FoodKind.Industrial)
+        {
+            shape = PrimitiveType.Cylinder; size = new Vector3(0.1f, 0.1f, 0.1f);
+            color = (p.Id.GetHashCode() & 1) == 0 ? new Color(0.85f, 0.15f, 0.15f) : new Color(0.95f, 0.8f, 0.15f);
+        }
+
+        var go = GameObject.CreatePrimitive(shape);
+        go.name = p.Name;
+        go.transform.localScale = size;
+        go.GetComponent<Renderer>().material.color = color;
+        int layer = LayerMask.NameToLayer("ShopItem");
+        if (layer >= 0) go.layer = layer;
+        go.transform.position = pos + Vector3.up * go.GetComponent<Renderer>().bounds.extents.y; // pos = punto d'appoggio
+        go.AddComponent<Rigidbody>();
+        var item = go.AddComponent<ShopItem>();
+        item.productId = p.Id;
+        item.itemName = p.Name;
+        return item;
+    }
+
+    /// <summary>Called when grabbed by player</summary>
     public void OnGrab()
     {
         isBeingHeld = true;
         isPlaced = false;
-        
-        if (rb != null)
-        {
-            rb.isKinematic = true;
-            rb.useGravity = false;
-        }
-        
-        if (col != null)
-        {
-            col.isTrigger = true; // Make trigger while held to avoid physics issues
-        }
+        rb.isKinematic = true;
+        rb.useGravity = false;
+        col.isTrigger = true; // trigger mentre è in mano, niente fisica strana
     }
 
-    /// <summary>
-    /// Called when placed by player
-    /// </summary>
+    /// <summary>Called when placed by player</summary>
     public void OnPlace()
     {
         isBeingHeld = false;
         isPlaced = true;
-        
-        if (rb != null)
-        {
-            // CRITICAL: Stop ALL movement immediately
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
-            
-            // Make kinematic so physics doesn't affect it
-            rb.isKinematic = true;
-            rb.useGravity = false;
-        }
-        
-        if (col != null)
-        {
-            col.isTrigger = false; // Solid collider so it can be grabbed again
-        }
-
-        // Force transform to stop moving
+        if (!rb.isKinematic) { rb.linearVelocity = Vector3.zero; rb.angularVelocity = Vector3.zero; }
+        rb.isKinematic = true;
+        rb.useGravity = false;
+        col.isTrigger = false;
         transform.hasChanged = false;
     }
 
-    /// <summary>
-    /// Called when thrown by player
-    /// </summary>
+    /// <summary>Called when thrown by player</summary>
     public void OnThrow(Vector3 velocity)
     {
         isBeingHeld = false;
         isPlaced = false;
-        
-        if (rb != null)
-        {
-            rb.isKinematic = false;
-            rb.useGravity = true;
-            rb.linearVelocity = velocity;
-            rb.angularVelocity = Random.insideUnitSphere * 2f;
-        }
-        
-        if (col != null)
-        {
-            col.isTrigger = false;
-        }
+        rb.isKinematic = false;
+        rb.useGravity = true;
+        rb.linearVelocity = velocity;
+        rb.angularVelocity = Random.insideUnitSphere * 2f;
+        col.isTrigger = false;
     }
 
-    /// <summary>
-    /// Get suggested price with variation
-    /// </summary>
-    public float GetSuggestedPrice()
+    /// <summary>Prezzo di listino del catalogo (0 se il prodotto non è nel catalogo).</summary>
+    public int GetSuggestedPrice() => Product?.BasePrice ?? 0;
+
+    public void SetPrice(int lire)
     {
-        float variation = Random.Range(-0.1f, 0.1f);
-        return basePrice * (1f + variation);
+        assignedPrice = lire;
+        Debug.Log($"{itemName}: prezzo {lire} lire");
     }
 
-    /// <summary>
-    /// Set price for this item
-    /// </summary>
-    public void SetPrice(float price)
-    {
-        assignedPrice = price;
-        Debug.Log($"{itemName}: Price set to €{price:F2}");
-    }
-
-    /// <summary>
-    /// Check if item has a price
-    /// </summary>
-    public bool HasPrice()
-    {
-        return assignedPrice > 0f;
-    }
+    public bool HasPrice() => assignedPrice > 0;
 }

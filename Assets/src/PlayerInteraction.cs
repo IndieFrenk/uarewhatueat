@@ -216,7 +216,7 @@ public class PlayerInteraction : MonoBehaviour
         // Set price
         if (Input.GetKeyDown(setPriceKey) && heldItem != null)
         {
-            float suggestedPrice = heldItem.GetSuggestedPrice();
+            int suggestedPrice = heldItem.GetSuggestedPrice();
             PriceUI.ShowPriceMenu?.Invoke(heldItem, suggestedPrice);
         }
     }

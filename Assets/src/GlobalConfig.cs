@@ -46,7 +46,7 @@ public class GlobalConfig : MonoBehaviour
     public float maxWaitTimeBeforeQueue = 2f;
     
     [Tooltip("Tempo massimo di attesa in fila (minuti di gioco)")]
-    public float maxWaitTimeInQueue = 3f;
+    public float maxWaitTimeInQueue = 20f;
     
     [Tooltip("Distanza massima per interagire con NPC")]
     public float interactionDistance = 3f;
@@ -114,6 +114,18 @@ public class GlobalConfig : MonoBehaviour
     [Tooltip("Risparmi di partenza in lire (la X della trama)")]
     public int startingSavings = 500000;
 
+    [Header("=== CLIENTI ===")]
+    [Tooltip("Secondi reali minimi tra un ingresso e l'altro")]
+    public float customerSpawnMin = 15f;
+
+    [Tooltip("Secondi reali massimi tra un ingresso e l'altro")]
+    public float customerSpawnMax = 35f;
+
+    [Tooltip("Clienti contemporanei nel negozio")]
+    public int maxCustomersInShop = 4;
+
+    [Tooltip("Velocità di camminata dei clienti (m/s)")]
+    public float customerSpeed = 1.6f;
     [Header("=== FLUSSO GIORNATA ===")]
     [Tooltip("Oltre questa distanza dal punto d'ingresso del negozio, all'apertura compare 'vai al negozio' (metri)")]
     public float shopFarDistance = 15f;
