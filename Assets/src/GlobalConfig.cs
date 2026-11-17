@@ -214,6 +214,53 @@ public class GlobalConfig : MonoBehaviour
     [Tooltip("Clip audio opzionale per le notti di presa")]
     public AudioClip humClip;
 
+    [Header("=== POST-PROCESSING (PostFx.cs) ===")]
+    [Tooltip("Attiva il Volume globale di post-processing creato da codice")]
+    public bool postFxEnabled = true;
+
+    [Tooltip("Peso dell'inquietudine che cresce coi giorni (0 = giorno 1, 1 = ultimo giorno)")]
+    [Range(0f, 1f)] public float postFxDayWeight = 0.6f;
+
+    [Tooltip("Peso dell'inquietudine di notte/al bar (si somma a quella dei giorni)")]
+    [Range(0f, 1f)] public float postFxNightWeight = 0.4f;
+
+    [Tooltip("Secondi che impiega l'inquietudine a spostarsi verso il nuovo valore (cambio fase)")]
+    public float postFxSmoothTime = 3f;
+
+    [Tooltip("Durata in secondi del picco quando qualcuno viene preso")]
+    public float postFxSpikeDuration = 2.5f;
+
+    [Tooltip("Quanta inquietudine aggiunge il picco al suo massimo (0-1)")]
+    [Range(0f, 1f)] public float postFxSpikeAmount = 0.5f;
+
+    [Tooltip("Vignetta a inquietudine 0 e 1")]
+    public Vector2 postFxVignette = new Vector2(0.18f, 0.5f);
+
+    [Tooltip("Colore della vignetta")]
+    public Color postFxVignetteColor = new Color(0.02f, 0.01f, 0.02f);
+
+    [Tooltip("Grana della pellicola a inquietudine 0 e 1")]
+    public Vector2 postFxGrain = new Vector2(0.1f, 0.55f);
+
+    [Tooltip("Saturazione (-100..100) a inquietudine 0 e 1: scende per desaturare")]
+    public Vector2 postFxSaturation = new Vector2(-5f, -45f);
+
+    [Tooltip("Aberrazione cromatica a inquietudine 0 e 1 (tienila minima)")]
+    public Vector2 postFxChromatic = new Vector2(0f, 0.2f);
+
+    [Tooltip("Intensità del bloom (insegne, finestre emissive)")]
+    public float postFxBloomIntensity = 0.6f;
+
+    [Tooltip("Soglia del bloom: più alta = brillano solo le luci forti")]
+    public float postFxBloomThreshold = 1.0f;
+
+    [Tooltip("Stile PS1: abbassa la risoluzione di rendering (renderScale dell'asset URP). Disattivo di default")]
+    public bool postFxPs1Style = false;
+
+    [Tooltip("Render scale dello stile PS1 (0.25-1)")]
+    [Range(0.25f, 1f)] public float postFxPs1RenderScale = 0.4f;
+
+
     // VARIABILI RUNTIME (non modificabili dall'inspector)
     [HideInInspector] public float currentHour = 7f;
     [HideInInspector] public float currentMinute = 0f;
