@@ -137,7 +137,7 @@ public class TruckOrders : MonoBehaviour
             int payed = GameState.Current.Money.Spend(qty * unitCost);
 
             for (int i = 0; i < qty; i++)
-                ShopItem.Spawn(p, anchor.position + new Vector3((i % 5) * 0.25f, 0.3f + (i / 5) * 0.25f, 0f));
+                ShopItem.Spawn(p, anchor.position + new Vector3((i % 5) * 0.25f, 0.3f + (i / 5) * 0.25f, 0f)).SetPrice(p.BasePrice); // prezzo di listino, cambiabile con P
             spent += payed;
         }
         GameState.Current.PendingOrder.Clear();

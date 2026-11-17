@@ -99,5 +99,13 @@ static class EndingsTests
         Check(w.EatenToday.Count == 1, "chi ha già mangiato non viene toccato");
         var z = new Villager(); z.Habits[FoodKind.Industrial] = 9f; z.Habits[FoodKind.Natural] = 0f;
         for (int i = 0; i < 20; i++) Check(Night.Pick(z, new Random(i)) == FoodKind.Industrial, "pesi rispettati");
+
+        // Vittorio non è prendibile prima del giorno in cui appare al bar + 1
+        var st = new GameState(1, 0);
+        Roster.Populate(st);
+        var vitt = st.Find("vittorio");
+        for (int d = 1; d <= Roster.ConspAppearDay; d++)
+            Check(MarkRules.TakeProbability(vitt, d) == 0f, "Vittorio al sicuro il giorno " + d);
+        Check(MarkRules.TakeProbability(vitt, Roster.ConspAppearDay + 1) > 0f, "Vittorio prendibile dopo il debutto");
     }
 }

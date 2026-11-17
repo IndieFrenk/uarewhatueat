@@ -114,6 +114,15 @@ public class GlobalConfig : MonoBehaviour
     [Tooltip("Risparmi di partenza in lire (la X della trama)")]
     public int startingSavings = 500000;
 
+    [Tooltip("Affitto giornaliero della bottega in lire, addebitato a fine giornata")]
+    public int dailyRent = 18000;
+
+    [Tooltip("Bollette giornaliere (luce, riscaldamento) in lire, addebitate a fine giornata")]
+    public int dailyBills = 7000;
+
+    [Tooltip("Costo in lire di un giro offerto al bar (beve l'altro, non tu)")]
+    public int barRoundCost = 3000;
+
     [Header("=== FIGLIA ===")]
     [Tooltip("Probabilità che la figlia mangi dolci di nascosto se ce ne sono in negozio (0-1)")]
     public float daughterSweetProbability = 0.6f;
@@ -171,6 +180,18 @@ public class GlobalConfig : MonoBehaviour
 
     [Tooltip("Densità massima nebbia (notte profonda)")]
     public float fogDensityMax = 0.05f;
+
+    [Tooltip("Nebbia extra aggiunta alla densità nella notte profonda (si somma a fogDensityMax)")]
+    public float nightFogExtra = 0.04f;
+
+    [Tooltip("Colore della nebbia di notte (scuro, quasi nero)")]
+    public Color nightFogColor = new Color(0.03f, 0.04f, 0.07f);
+
+    [Tooltip("Intensità della luce ambientale di notte (1 = come di giorno)")]
+    public float nightAmbientIntensity = 0.25f;
+
+    [Tooltip("Moltiplicatore della luce direzionale di notte (si applica a nightLightIntensity)")]
+    public float nightSunMultiplier = 0.5f;
 
     [Tooltip("Moltiplicatore densità nebbia per ogni giorno passato")]
     public float fogDensityDayMultiplier = 0.005f;

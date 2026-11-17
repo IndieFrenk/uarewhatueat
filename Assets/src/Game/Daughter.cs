@@ -56,9 +56,9 @@ public class Daughter : Interactable
         return $"Giulia, otto anni. {mood}";
     }
 
-    static string Forehead(float mark) =>
+    string Forehead(float mark) =>
         mark >= 0.7f ? "Il segno è netto, scuro, come disegnato col pennino." :
-        mark >= 0.5f ? "Il segno c'è, ma è più chiaro di ieri." :
+        mark >= 0.5f ? (s.Day >= 2 ? "Il segno c'è, ma è più chiaro di ieri." : "Il segno c'è, ma non è molto scuro.") :
         mark >= MarkRules.VisibleThreshold ? "Il segno è quasi sparito. Devi avvicinarti per vederlo." :
         "Non c'è più. La fronte è liscia, pulita. Troppo pulita.";
 

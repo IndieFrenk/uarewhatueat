@@ -127,7 +127,7 @@ public class TimeManager : MonoBehaviour
 
         // Applica il colore e l'intensità della luce
         directionalLight.color = Color.Lerp(config.nightLightColor, config.dayLightColor, dayNightBlend);
-        directionalLight.intensity = Mathf.Lerp(config.nightLightIntensity, config.dayLightIntensity, dayNightBlend);
+        directionalLight.intensity = Mathf.Lerp(config.nightLightIntensity * config.nightSunMultiplier, config.dayLightIntensity, dayNightBlend);
 
         // Rotazione del sole
         float sunAngle = (hour / 24f) * 360f - 90f;

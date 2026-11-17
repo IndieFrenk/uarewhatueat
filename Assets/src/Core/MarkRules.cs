@@ -59,7 +59,7 @@ public static class MarkRules
     /// <summary>Probabilità (0..1) di essere preso stanotte. Cresce coi giorni (atto 2-3) e col marchio basso.</summary>
     public static float TakeProbability(Villager v, int day)
     {
-        if (v.Taken) return 0f;
+        if (v.Taken || day < v.FirstTakeDay) return 0f;
 
         // Base: (1 - Mark)^2
         float base_prob = (1f - v.Mark) * (1f - v.Mark);
