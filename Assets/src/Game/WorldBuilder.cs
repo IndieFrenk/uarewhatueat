@@ -59,7 +59,12 @@ public static class WorldBuilder
         for (int i = 0; i + 3 < n.Count; i += 4) O.Add(new Rect(ShopW - n[i + 2], n[i + 1], n[i + 2] - n[i], n[i + 3] - n[i + 1])); // y = z
         var cols = new[] { Cream, Wood, new Color(.8f, .8f, .78f), Grey };
         for (int i = 0; i < O.Count && i < ObsH.Length; i++)
-            Box("Ostacolo" + i, p, new Vector3(O[i].center.x, ObsH[i] / 2, O[i].center.y), new Vector3(O[i].width, ObsH[i], O[i].height), cols[ObsKind[i]]);
+        {
+            var box = Box("Ostacolo" + i, p, new Vector3(O[i].center.x, ObsH[i] / 2, O[i].center.y), new Vector3(O[i].width, ObsH[i], O[i].height), cols[ObsKind[i]]);
+            // banco affettati (i = 2) e cassa (i = 3): il modello veste il box, che resta come ingombro (collider invariato)
+            string m = i == 2 ? "banco_affettati" : i == 3 ? "cassa" : null;
+            if (m != null && Model(m, p, new Vector3(O[i].center.x, 0, O[i].center.y), ShopModelYaw(m), 1, false, true) != null) box.GetComponent<Renderer>().enabled = false;
+        }
 
         // porta del magazzino a battente nel varco del muro divisorio (x 0.05..0.95, z 8)
         var hinge = Group("PortaMagazzino", p);
@@ -101,6 +106,9 @@ public static class WorldBuilder
         }
         WorldAnchors.ShopLights = lights;
     }
+
+    // Rotazione dei modelli del negozio (da calibrare nell'editor): il fronte guarda verso +x mondo, dove stanno i clienti.
+    static float ShopModelYaw(string m) => 0;
 
     // Ripiani lungo una linea: per ogni livello una mensola e n punti equidistanti.
     static void Shelf(Transform sp, List<Transform> slots, float[] levels, Vector3 from, Vector3 to, int n)
@@ -196,8 +204,11 @@ public static class WorldBuilder
         // lampioni
         foreach (var c in new[] { new Vector2(-3, -6), new Vector2(9, -6), new Vector2(-3, -18), new Vector2(9, -18) })
         {
-            Box("Palo", p, new Vector3(c.x, 2, c.y), new Vector3(.12f, 2, .12f), Grey, false, PrimitiveType.Cylinder);
-            Box("Lampada", p, new Vector3(c.x, 4.1f, c.y), new Vector3(.4f, .4f, .4f), Warm, true, PrimitiveType.Sphere);
+            if (Model("lampione", p, new Vector3(c.x, 0, c.y), 0, 1, true) == null)
+            {
+                Box("Palo", p, new Vector3(c.x, 2, c.y), new Vector3(.12f, 2, .12f), Grey, false, PrimitiveType.Cylinder);
+                Box("Lampada", p, new Vector3(c.x, 4.1f, c.y), new Vector3(.4f, .4f, .4f), Warm, true, PrimitiveType.Sphere);
+            }
             Lamp(p, new Vector3(c.x, 4f, c.y), Warm, GlobalConfig.Instance.streetLampIntensity, 9f);
         }
     }
@@ -262,6 +273,36 @@ public static class WorldBuilder
         g.transform.position = center;
         g.transform.localScale = size;
         g.GetComponent<Renderer>().sharedMaterial = Mat(c, emit);
+        return g;
+    }
+
+    // Istanzia Resources/Models/v3/<name> (pos e yaw locali a parent). center: pos = centro in pianta e piede del modello (altrimenti pos = origine).
+    // collider: BoxCollider dai bounds. Ritorna null se il modello manca: il chiamante tiene la primitiva.
+    internal static GameObject Model(string name, Transform parent, Vector3 pos, float yaw = 0, float scale = 1, bool collider = false, bool center = false)
+    {
+        var prefab = Resources.Load<GameObject>("Models/v3/" + name);
+        if (prefab == null) return null;
+        var g = Object.Instantiate(prefab, parent, false);
+        g.name = name;
+        foreach (var c in g.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(c);
+        Bounds b = default;
+        bool any = false;
+        foreach (var mf in g.GetComponentsInChildren<MeshFilter>())
+        {
+            if (mf.sharedMesh == null) continue;
+            var mb = mf.sharedMesh.bounds;
+            for (int i = 0; i < 8; i++)
+            {
+                var corner = mb.center + Vector3.Scale(mb.extents, new Vector3(i & 1, (i >> 1) & 1, (i >> 2) & 1) * 2 - Vector3.one);
+                var q = g.transform.InverseTransformPoint(mf.transform.TransformPoint(corner));
+                if (any) b.Encapsulate(q); else { b = new Bounds(q, Vector3.zero); any = true; }
+            }
+        }
+        var rot = Quaternion.Euler(0, yaw, 0);
+        g.transform.localScale = Vector3.one * scale;
+        g.transform.localRotation = rot;
+        g.transform.localPosition = center && any ? pos - rot * (new Vector3(b.center.x, b.min.y, b.center.z) * scale) : pos;
+        if (collider && any) { var bc = g.AddComponent<BoxCollider>(); bc.center = b.center; bc.size = b.size; }
         return g;
     }
 
