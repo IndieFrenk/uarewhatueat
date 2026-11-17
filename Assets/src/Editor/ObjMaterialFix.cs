@@ -8,10 +8,10 @@ using UnityEngine;
 /// </summary>
 class ObjMaterialFix : AssetPostprocessor
 {
-    // Canolo.cs fonde i modelli degli edifici in mesh per (materiale, cella): servono leggibili.
+    // Canolo.cs fonde i modelli degli edifici e della vegetazione in mesh per (materiale, cella): servono leggibili.
     void OnPreprocessModel()
     {
-        if (assetPath.StartsWith("Assets/Resources/Models/v5/canolo/") && assetImporter is ModelImporter mi) mi.isReadable = true;
+        if ((assetPath.StartsWith("Assets/Resources/Models/v5/canolo/") || assetPath.StartsWith("Assets/Resources/Models/v5/vegetazione/")) && assetImporter is ModelImporter mi) mi.isReadable = true;
     }
 
     void OnPreprocessMaterialDescription(MaterialDescription d, Material m, AnimationClip[] clips)

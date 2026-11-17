@@ -1,0 +1,12 @@
+newmtl corteccia_6e5238
+Kd 0.431 0.322 0.220
+map_Kd texture/corteccia.png
+newmtl erba_4a7a2a
+Kd 0.290 0.478 0.165
+map_Kd texture/erba.png
+newmtl erba_3f6e2c
+Kd 0.247 0.431 0.173
+map_Kd texture/erba.png
+newmtl erba_5a8a32
+Kd 0.353 0.541 0.196
+map_Kd texture/erba.png
