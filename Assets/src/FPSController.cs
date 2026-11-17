@@ -74,9 +74,6 @@ public class FPSController : MonoBehaviour
     
     [Tooltip("Layer da considerare come terreno")]
     [SerializeField] private LayerMask groundMask = 1;
-    
-    [Tooltip("Distanza check terreno")]
-    [SerializeField] private float groundCheckDistance = 0.3f;
 
     [Header("Effetti Visivi (Opzionale)")]
     [Tooltip("Head bob abilitato durante la camminata")]
