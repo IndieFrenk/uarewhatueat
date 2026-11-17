@@ -125,7 +125,7 @@ public class GlobalConfig : MonoBehaviour
     public float fogDensityDayMultiplier = 0.005f;
 
     [Tooltip("Probabilità tremolio luci negozio (0-1)")]
-    public float shopLightFlickerChance = 0.3f;
+    public float shopLightFlickerChance = 0.04f;
 
     [Tooltip("Durata del tremolio in secondi")]
     public float shopLightFlickerDuration = 0.1f;
