@@ -237,10 +237,7 @@ public static class VillageDressing
         Awning(bar, 0, 2.65f, 4, 4f, new Color(.15f, .3f, .5f), Cream);
         Sign(bar, "BAR SPORT", V(0, 3.4f, 4.1f), 5.5f, new Color(.45f, .08f, .08f), Cream, 1f);
 
-        // negozio: insegna sopra la porta
-        var ancora = WorldBuilder.Group("Ancora", p);
-        ancora.rotation = E(0, 180, 0); // il +z locale guarda la piazza, come le altre facciate
-        Sign(ancora, "ALIMENTARI", V(-3, 2.6f, .3f), 4f, new Color(.25f, .4f, .3f), Cream, .7f);
+        Bottega(p);
 
         // fila nord (facce a sud, facciata a z=1,8)
         var mac = Shop(p, V(-9, 0, 5.8f), 180, 12, 8, 6.5f, new Color(.82f, .7f, .64f), Roofs[0], "MACELLERIA", new Color(.45f, .1f, .1f), Cream, Red, Cream);
@@ -265,6 +262,115 @@ public static class VillageDressing
             foreach (int s in new[] { -1, 1 }) C(p, V(x + s * .6f, .25f, -24.9f), V(.35f, .5f, .35f), WoodD);
         }
         foreach (var o in new[] { V(-9, 0, 5.8f), V(12, 0, 5.8f), V(21.5f, 0, 5.8f), V(3, 0, -33), V(18, 0, -30.1f), V(-12.5f, 0, -29.6f) }) taken.Add(V(o.x, o.z, 12));
+    }
+
+    // Esterno della bottega (volume x 0..6, z 0..12, porta a x 2..3 su z=0): casa a due piani, abitazione sopra il negozio.
+    // Muri sottili senza collider attaccati alle pareti interne (x -0,2..6,2; z -0,2..12,2): niente entra nella stanza, il varco della porta resta libero.
+    // Coordinate locali del gruppo (yaw 180): +z guarda la piazza, lx = 3 - x mondo, lz = 6 - z mondo; la porta sta a lx 0..1.
+    static void Bottega(Transform p)
+    {
+        var keep = rnd;
+        rnd = new System.Random(5); // le finestre accese non spostano la sequenza casuale del resto del paese
+        const float W = 6.9f, D = 12.9f, Ht = 6.3f, T = .25f;
+        float hw = W / 2, hd = D / 2;
+        var plaster = new Color(.88f, .72f, .48f);
+        var brass = new Color(.72f, .55f, .2f);
+        var g = House(p, V(3, 0, 6), 180, W, D, Ht, plaster, Roofs[0], wins: false, body: false, ridgeZ: true);
+
+        // intonaco: lati, retro, facciata con varco (porta alta 2,2) e architrave
+        float sc = hw - T / 2, cy = 2.65f, sh = 7.3f;
+        foreach (int s in new[] { -1, 1 }) C(g, V(s * sc, cy, 0), V(T, sh, D - 2 * T), plaster);
+        C(g, V(0, cy, -hd + T / 2), V(W, sh, T), plaster);
+        C(g, V(-hw / 2, cy, hd - T / 2), V(hw, sh, T), plaster);
+        C(g, V((1 + hw) / 2, cy, hd - T / 2), V(hw - 1, sh, T), plaster);
+        C(g, V(.5f, 4.25f, hd - T / 2), V(1, 4.1f, T), plaster);
+        // zoccolo in pietra (y -0,6..0,9)
+        foreach (int s in new[] { -1, 1 }) C(g, V(s * (sc + .03f), .15f, 0), V(T + .06f, 1.5f, D + .06f), Stone);
+        C(g, V(0, .15f, -hd + T / 2 - .03f), V(W - 2 * T, 1.5f, T + .06f), Stone);
+        C(g, V(-(hw - T) / 2, .15f, hd - T / 2 + .03f), V(hw - T, 1.5f, T + .06f), Stone);
+        C(g, V((1 + hw - T) / 2, .15f, hd - T / 2 + .03f), V(hw - T - 1, 1.5f, T + .06f), Stone);
+        // porta: stipiti, architrave in legno, gradino
+        foreach (float x in new[] { -.06f, 1.06f }) C(g, V(x, 1.1f, hd + .02f), V(.12f, 2.3f, .12f), WoodD);
+        C(g, V(.5f, 2.26f, hd + .02f), V(1.3f, .12f, .14f), WoodD);
+        C(g, V(.5f, .05f, hd + .3f), V(1.3f, .1f, .6f), Stone);
+
+        // vetrine accese ai lati della porta, con merce sul ripiano
+        void Vetrina(float x, float w)
+        {
+            C(g, V(x, 1.35f, hd + .03f), V(w + .3f, 1.7f, .06f), Frame);
+            C(g, V(x, 1.35f, hd + .07f), V(w, 1.5f, .04f), Lit, null, true);
+            C(g, V(x, 1.35f, hd + .1f), V(.05f, 1.5f, .03f), Frame);
+            C(g, V(x, .55f, hd + .14f), V(w + .4f, .1f, .3f), Stone);
+            C(g, V(x, .95f, hd + .13f), V(w, .04f, .2f), WoodL);
+            var goods = new[] { Red, Leaf, new Color(.85f, .7f, .2f), new Color(.25f, .4f, .6f) };
+            for (int i = 0; i < (int)(w / .3f); i++) C(g, V(x - w / 2 + .2f + i * .3f, 1.07f, hd + .13f), V(.18f, .24f, .14f), goods[i % goods.Length]);
+        }
+        Vetrina(2.45f, 1f);
+        Vetrina(-2f, 1.8f);
+
+        // tendone, insegna, cartello APERTO acceso, campanello con targa, cassetta della posta
+        Awning(g, 0, 2.65f, hd, W - .4f, new Color(.2f, .4f, .25f), Cream);
+        Sign(g, "ALIMENTARI", V(0, 3.55f, hd + .1f), 4.4f, new Color(.25f, .4f, .3f), Cream, .7f);
+        Sign(g, "APERTO", V(1.45f, 1.55f, hd + .1f), .48f, new Color(.5f, .1f, .1f), Cream, .22f);
+        C(g, V(1.45f, 1.4f, hd + .06f), V(.5f, .03f, .03f), new Color(.3f, .9f, .4f), null, true);
+        C(g, V(-.3f, 1.3f, hd + .03f), V(.14f, .34f, .04f), brass);
+        foreach (float y in new[] { 1.38f, 1.24f }) C(g, V(-.3f, y, hd + .06f), V(.06f, .06f, .03f), Cream);
+        C(g, V(-.65f, 1.25f, hd + .07f), V(.34f, .28f, .14f), Red);
+        C(g, V(-.65f, 1.3f, hd + .15f), V(.2f, .02f, .02f), Dark);
+        Bici(g, -2f, hd + .5f);
+
+        // piano di sopra: tre finestre con cassette di fiori sulla facciata, due per lato e sul retro, una nel frontone
+        foreach (float x in new[] { -1.6f, .5f, 2.6f })
+        {
+            Win(g, V(x, 5, hd), 0, false);
+            C(g, V(x, 4.4f, hd + .2f), V(1.2f, .25f, .3f), WoodL);
+            C(g, V(x, 4.55f, hd + .2f), V(1.1f, .1f, .24f), Leaf);
+            for (int i = 0; i < 4; i++) C(g, V(x - .4f + i * .27f, 4.65f, hd + .2f), V(.12f, .12f, .12f), i % 2 == 0 ? Red : Cream);
+        }
+        foreach (float z in new[] { -3.5f, 0, 3.5f })
+            foreach (float y in new[] { 1.7f, 5 })
+            {
+                Win(g, V(hw, y, z), 90, false);
+                Win(g, V(-hw, y, z), -90, false);
+            }
+        foreach (float x in new[] { -2f, 0, 2f })
+            foreach (float y in new[] { 1.7f, 5 }) Win(g, V(x, y, -hd), 180, true);
+        C(g, V(0, 7.1f, hd + .03f), V(.7f, .8f, .06f), Frame);
+        C(g, V(0, 7.1f, hd + .07f), V(.5f, .6f, .04f), Lit, null, true);
+
+        // antenna TV anni 90 sul colmo
+        C(g, V(0, 9.6f, 2.5f), V(.05f, 2.4f, .05f), Slate);
+        for (int i = 0; i < 3; i++) C(g, V(0, 9.4f + i * .35f, 2.5f), V(1f - i * .25f, .04f, .04f), Slate);
+
+        taken.Add(V(3, 6, 12));
+        rnd = keep;
+    }
+
+    // Bici appoggiata al muro (asse lungo lx), inclinata verso la facciata.
+    static void Bici(Transform g, float x, float z)
+    {
+        var b = G(g, "Bici", x, 0, z);
+        b.localRotation = E(-10, 0, 0);
+        var fr = new Color(.15f, .4f, .5f);
+        foreach (float wx in new[] { -.45f, .45f })
+        {
+            C(b, V(wx, .35f, 0), V(.7f, .03f, .7f), Dark, E(90, 0, 0), false, PrimitiveType.Cylinder);
+            C(b, V(wx, .35f, 0), V(.58f, .036f, .58f), Frame, E(90, 0, 0), false, PrimitiveType.Cylinder);
+        }
+        void Bar(float x0, float y0, float x1, float y1, float t)
+        {
+            float dx = x1 - x0, dy = y1 - y0;
+            C(b, V((x0 + x1) / 2, (y0 + y1) / 2, 0), V(Mathf.Sqrt(dx * dx + dy * dy), t, t), fr, E(0, 0, Mathf.Atan2(dy, dx) * Mathf.Rad2Deg));
+        }
+        Bar(-.45f, .35f, -.02f, .3f, .035f);
+        Bar(-.02f, .3f, -.2f, .82f, .035f);
+        Bar(-.2f, .82f, .33f, .78f, .035f);
+        Bar(-.02f, .3f, .33f, .78f, .035f);
+        Bar(.33f, .78f, .45f, .35f, .035f);
+        Bar(-.45f, .35f, -.2f, .82f, .03f);
+        Bar(.33f, .78f, .36f, .92f, .035f);
+        C(b, V(.36f, .92f, 0), V(.04f, .04f, .5f), Dark);
+        C(b, V(-.22f, .86f, 0), V(.26f, .05f, .12f), Dark);
     }
 
     static void Pot(Transform p, float x, float y, float z, float s)
