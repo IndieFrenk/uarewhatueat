@@ -34,6 +34,7 @@ public static class WorldBuilder
         BuildBar();
         BuildPlaza();
         EnsurePlayer();
+        VillageDressing.Build();
     }
 
     // ---------------- NEGOZIO ----------------
@@ -181,19 +182,17 @@ public static class WorldBuilder
     {
         var p = Group("Piazza");
         Box("Suolo", p, new Vector3(5, -.75f, -12), new Vector3(42, 1.5f, 24), new Color(.45f, .43f, .4f));
-        // muretti di bordo (il lato nord è il negozio, con due tratti ai lati)
-        Box("Muretto", p, new Vector3(-16, .6f, -12), new Vector3(.4f, 1.2f, 24), Grey);
-        Box("Muretto", p, new Vector3(26, .6f, -12), new Vector3(.4f, 1.2f, 24), Grey);
-        Box("Muretto", p, new Vector3(5, .6f, -24), new Vector3(42, 1.2f, .4f), Grey);
-        Box("Muretto", p, new Vector3(-8, .6f, 0), new Vector3(16, 1.2f, .4f), Grey);
-        Box("Muretto", p, new Vector3(16, .6f, 0), new Vector3(20, 1.2f, .4f), Grey);
-        // edifici: casa e bar (con porta) più due sfondi
+        // muretti bassi (0,8 m; il salto è oltre: VillageDressing li alza con collider invisibili; il lato nord è il negozio, con due tratti ai lati)
+        Box("Muretto", p, new Vector3(-16, .4f, -12), new Vector3(.4f, .8f, 24), Grey);
+        Box("Muretto", p, new Vector3(26, .4f, -12), new Vector3(.4f, .8f, 24), Grey);
+        Box("Muretto", p, new Vector3(5, .4f, -24), new Vector3(42, .8f, .4f), Grey);
+        Box("Muretto", p, new Vector3(-8, .4f, 0), new Vector3(16, .8f, .4f), Grey);
+        Box("Muretto", p, new Vector3(16, .4f, 0), new Vector3(20, .8f, .4f), Grey);
+        // edifici: casa e bar (con porta); il resto lo fa VillageDressing
         Box("EdificioCasa", p, new Vector3(-10, 3, -10), new Vector3(8, 6, 8), new Color(.7f, .6f, .5f));
         MakeDoor(new Vector3(-5.95f, 1.1f, -10), new Vector3(.1f, 2.2f, 1), "Entra in casa", WorldAnchors.HomeSpawn, Wood, p);
         Box("EdificioBar", p, new Vector3(20, 3, -10), new Vector3(8, 6, 8), new Color(.5f, .35f, .3f));
         MakeDoor(new Vector3(15.95f, 1.1f, -10), new Vector3(.1f, 2.2f, 1), "Entra al bar", WorldAnchors.BarSpawn, Wood, p);
-        Box("EdificioSfondo", p, new Vector3(3, 4, -28), new Vector3(14, 8, 6), new Color(.6f, .6f, .55f));
-        Box("EdificioSfondo", p, new Vector3(-12, 3, -27), new Vector3(8, 6, 6), new Color(.55f, .5f, .45f));
         // lampioni
         foreach (var c in new[] { new Vector2(-3, -6), new Vector2(9, -6), new Vector2(-3, -18), new Vector2(9, -18) })
         {
@@ -228,7 +227,7 @@ public static class WorldBuilder
 
     // ---------------- ATTREZZI ----------------
 
-    static Transform Group(string name, Transform parent = null)
+    internal static Transform Group(string name, Transform parent = null)
     {
         var t = new GameObject(name).transform;
         t.SetParent(parent != null ? parent : root);
@@ -243,7 +242,7 @@ public static class WorldBuilder
         return t;
     }
 
-    static Material Mat(Color c, bool emit = false)
+    internal static Material Mat(Color c, bool emit = false)
     {
         if (!mats.TryGetValue((c, emit), out var m) || m == null)
         {
@@ -255,7 +254,7 @@ public static class WorldBuilder
         return m;
     }
 
-    static GameObject Box(string name, Transform p, Vector3 center, Vector3 size, Color c, bool emit = false, PrimitiveType type = PrimitiveType.Cube)
+    internal static GameObject Box(string name, Transform p, Vector3 center, Vector3 size, Color c, bool emit = false, PrimitiveType type = PrimitiveType.Cube)
     {
         var g = GameObject.CreatePrimitive(type);
         g.name = name;
@@ -266,7 +265,7 @@ public static class WorldBuilder
         return g;
     }
 
-    static Light Lamp(Transform p, Vector3 pos, Color c, float intensity = -1, float range = -1)
+    internal static Light Lamp(Transform p, Vector3 pos, Color c, float intensity = -1, float range = -1)
     {
         var l = new GameObject("Luce").AddComponent<Light>();
         l.transform.SetParent(p);
