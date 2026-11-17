@@ -1,25 +1,21 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 /// <summary>
-/// Veste il paese attorno alla piazza (solo primitive): facciate, arredo, case su terreno in salita, pini e corona di montagne (Terrain da heightmap Perlin).
+/// Veste la piazza (solo primitive): facciate e arredo. Il "Fuori" (rilievo, edifici, strade, bosco) lo costruisce Canolo.
 /// Tutto statico e senza collider, tranne l'arredo che il giocatore può urtare e le barriere invisibili sopra i muretti.
 /// Si chiama in fondo a WorldBuilder.Build(); usa Box/Mat/Group/Lamp di WorldBuilder (cache materiali condivisa).
-/// Stima draw call: ~40 materiali, gruppi combinati con StaticBatchingUtility (Facciate, Arredo, Fuori) + terreno + insegne.
+/// Stima draw call: ~40 materiali, gruppi combinati con StaticBatchingUtility (Facciate, Arredo) + insegne + Canolo.
 /// </summary>
 public static class VillageDressing
 {
-    // terreno: 300x300 m centrato sulla piazza, base a y=-12, altezza max 120
-    const float TX = -150, TZ = -165, TS = 300, TB = -12, TH = 120;
-
-    static readonly Color Stone = new Color(.55f, .53f, .5f), Frame = new Color(.88f, .85f, .78f), Dark = new Color(.1f, .12f, .16f),
+    internal static readonly Color Stone = new Color(.55f, .53f, .5f), Frame = new Color(.88f, .85f, .78f), Dark = new Color(.1f, .12f, .16f),
         Lit = new Color(.35f, .26f, .12f), Brick = new Color(.45f, .2f, .15f), WoodD = new Color(.28f, .18f, .1f), WoodL = new Color(.5f, .38f, .25f),
         Terra = new Color(.65f, .35f, .22f), Leaf = new Color(.2f, .42f, .2f), Slate = new Color(.32f, .3f, .32f), Tile = new Color(.62f, .27f, .2f),
         Asphalt = new Color(.2f, .2f, .22f), Paving = new Color(.5f, .48f, .44f), Red = new Color(.7f, .12f, .12f), Cream = new Color(.92f, .9f, .8f);
     static readonly Color[] Shut = { new Color(.2f, .35f, .22f), new Color(.4f, .25f, .15f), new Color(.3f, .2f, .15f) };
-    static readonly Color[] Walls = { new Color(.78f, .7f, .58f), new Color(.72f, .62f, .5f), new Color(.8f, .76f, .68f), new Color(.62f, .55f, .5f), new Color(.85f, .8f, .7f), new Color(.75f, .6f, .5f) };
-    static readonly Color[] Roofs = { new Color(.5f, .25f, .2f), new Color(.42f, .22f, .18f), new Color(.35f, .3f, .3f) };
+    internal static readonly Color[] Walls = { new Color(.78f, .7f, .58f), new Color(.72f, .62f, .5f), new Color(.8f, .76f, .68f), new Color(.62f, .55f, .5f), new Color(.85f, .8f, .7f), new Color(.75f, .6f, .5f) };
+    internal static readonly Color[] Roofs = { new Color(.5f, .25f, .2f), new Color(.42f, .22f, .18f), new Color(.35f, .3f, .3f) };
 
     static System.Random rnd;
     static Transform signs;
@@ -32,17 +28,12 @@ public static class VillageDressing
         signs = WorldBuilder.Group("Insegne"); // fuori dai gruppi combinati: TextMesh
         var fac = WorldBuilder.Group("Facciate");
         var arr = WorldBuilder.Group("Arredo");
-        var fuo = WorldBuilder.Group("Fuori");
         Barriere(arr);
         Facciate(fac);
         Arredo(arr);
-        Terreno(fuo);
-        Strada(fuo);
-        Case(fuo);
-        Pini(fuo);
         StaticBatchingUtility.Combine(fac.gameObject);
         StaticBatchingUtility.Combine(arr.gameObject);
-        StaticBatchingUtility.Combine(fuo.gameObject);
+        Canolo.Build(); // il "Fuori": Canolo Nuovo vero (rilievo, edifici, strade, bosco)
     }
 
     // ---------------- ATTREZZI ----------------
@@ -75,22 +66,6 @@ public static class VillageDressing
         t.SetParent(p, false);
         t.localPosition = pos;
         t.gameObject.AddComponent<BoxCollider>().size = size;
-    }
-
-    // Altezza del terreno: la stessa riempie la heightmap e posa case e alberi.
-    // Piazza e facciate stanno su un'area piatta (-0,4); fuori sale a 0,16 m/m (sud scende lungo la strada), poi le montagne da r>40.
-    static float H(float x, float z)
-    {
-        float dx = Mathf.Max(Mathf.Abs(x - 5) - 21, 0);
-        float dz = z > -12 ? Mathf.Max(z - 14, 0) : Mathf.Max(-42 - z, 0);
-        float r = Mathf.Sqrt(dx * dx + dz * dz);
-        float rate = Mathf.Lerp(.16f, -.07f, Mathf.InverseLerp(-4f, -30f, z));
-        float h = -.4f + rate * r;
-        h += Mathf.SmoothStep(0, 1, (r - 40) / 100f) * (45 + 45 * Mathf.PerlinNoise(x * .011f + 40, z * .011f + 7) + 8 * Mathf.PerlinNoise(x * .05f, z * .05f));
-        h += Mathf.Clamp01(r / 20) * 1.2f * (Mathf.PerlinNoise(x * .09f, z * .09f) - .5f); // dossi
-        // la stanza di casa (x 100..107, z 0..5) è chiusa: il terreno non deve entrarci
-        float d = Mathf.Sqrt(Mathf.Pow(Mathf.Max(Mathf.Abs(x - 103.5f) - 8, 0), 2) + Mathf.Pow(Mathf.Max(Mathf.Abs(z - 2.5f) - 5, 0), 2));
-        return Mathf.Lerp(-2f, h, Mathf.SmoothStep(0, 1, d / 30f));
     }
 
     // ---------------- BARRIERE ----------------
@@ -523,112 +498,5 @@ public static class VillageDressing
         C(g, V(0, .3f, 1.83f), V(1.5f, .12f, .08f), Stone);
         C(g, V(0, .3f, -1.83f), V(1.5f, .12f, .08f), Stone);
         Blocker(g, V(0, .7f, 0), V(1.6f, 1.4f, 3.7f));
-    }
-
-    // ---------------- FUORI DAI MURETTI ----------------
-
-    static Texture2D Noise(Color a, Color b)
-    {
-        var t = new Texture2D(16, 16) { wrapMode = TextureWrapMode.Repeat };
-        for (int i = 0; i < 16; i++) for (int j = 0; j < 16; j++) t.SetPixel(i, j, Color.Lerp(a, b, (float)rnd.NextDouble()));
-        t.Apply();
-        return t;
-    }
-
-    // Corona di montagne: Terrain da codice, heightmap = H(). Tre strati (prato, roccia, neve) per altezza.
-    static void Terreno(Transform p)
-    {
-        const int N = 257, A = 128;
-        var td = new TerrainData { heightmapResolution = N, alphamapResolution = A };
-        td.size = V(TS, TH, TS);
-        var hm = new float[N, N];
-        for (int zi = 0; zi < N; zi++)
-            for (int xi = 0; xi < N; xi++) hm[zi, xi] = (H(TX + xi * TS / (N - 1), TZ + zi * TS / (N - 1)) - TB) / TH;
-        td.SetHeights(0, 0, hm);
-        td.terrainLayers = new[]
-        {
-            new TerrainLayer { diffuseTexture = Noise(new Color(.25f, .38f, .17f), new Color(.33f, .45f, .2f)), tileSize = new Vector2(8, 8) },
-            new TerrainLayer { diffuseTexture = Noise(new Color(.38f, .35f, .3f), new Color(.5f, .46f, .4f)), tileSize = new Vector2(10, 10) },
-            new TerrainLayer { diffuseTexture = Noise(new Color(.85f, .86f, .9f), new Color(.95f, .95f, 1f)), tileSize = new Vector2(10, 10) },
-        };
-        var am = new float[A, A, 3];
-        for (int zi = 0; zi < A; zi++)
-            for (int xi = 0; xi < A; xi++)
-            {
-                float x = TX + (xi + .5f) * TS / A, z = TZ + (zi + .5f) * TS / A, h = H(x, z) + 6 * (Mathf.PerlinNoise(x * .07f, z * .07f) - .5f);
-                float rock = Mathf.SmoothStep(0, 1, (h - 14) / 14f), snow = Mathf.SmoothStep(0, 1, (h - 52) / 10f);
-                am[zi, xi, 0] = (1 - rock) * (1 - snow);
-                am[zi, xi, 1] = rock * (1 - snow);
-                am[zi, xi, 2] = snow;
-            }
-        td.SetAlphamaps(0, 0, am);
-        var go = Terrain.CreateTerrainGameObject(td);
-        go.name = "Montagne";
-        go.transform.SetParent(p);
-        go.transform.position = V(TX, TB, TZ);
-        Object.Destroy(go.GetComponent<TerrainCollider>()); // lontano e irraggiungibile
-        var t = go.GetComponent<Terrain>();
-        t.heightmapPixelError = 10;
-        t.shadowCastingMode = ShadowCastingMode.Off;
-        var sh = Shader.Find("Universal Render Pipeline/Terrain/Lit");
-        if (sh != null) t.materialTemplate = new Material(sh);
-    }
-
-    // Strada a est della piazza (x=29,5) che scende verso sud seguendo il terreno.
-    static void Strada(Transform p)
-    {
-        for (float z = 20; z > -104; z -= 4)
-        {
-            float ya = H(29.5f, z), yb = H(29.5f, z - 4);
-            C(p, V(29.5f, (ya + yb) / 2 + .06f, z - 2), V(4.5f, .1f, 4.2f), Asphalt, E(-Mathf.Atan2(ya - yb, 4) * Mathf.Rad2Deg, 0, 0));
-        }
-    }
-
-    // File di case sul pendio, girate verso la piazza (4 file per lato; solo la prima con le finestre complete).
-    static void Case(Transform p)
-    {
-        for (int k = 0; k < 4; k++)
-        {
-            float off = 12 * k;
-            for (float z = -30; z < 14; z += 10.5f) { Casa(p, -22 - off, z, 90, k); Casa(p, 37 + off, z, 270, k); }
-            for (float x = -16; x < 24; x += 10.5f) Casa(p, x, 22 + off, 180, k);
-            for (float x = -22; x < 36; x += 11) if (Mathf.Abs(x - 29.5f) > 5) Casa(p, x, -50 - off, 0, k);
-        }
-    }
-
-    static void Casa(Transform p, float x, float z, float yaw, int k)
-    {
-        x += (float)(rnd.NextDouble() - .5) * 3;
-        z += (float)(rnd.NextDouble() - .5) * 3;
-        float w = 6 + (float)rnd.NextDouble() * 3, d = 6 + (float)rnd.NextDouble() * 2, h = rnd.Next(2) == 0 ? 6.2f : 9.2f, r = Mathf.Max(w, d) / 2;
-        float y = Mathf.Min(Mathf.Min(H(x - r, z - r), H(x + r, z - r)), Mathf.Min(H(x - r, z + r), H(x + r, z + r)));
-        House(p, V(x, y, z), yaw + (float)(rnd.NextDouble() - .5) * 16, w, d, h, Walls[rnd.Next(Walls.Length)], Roofs[rnd.Next(Roofs.Length)], far: k > 0, sides: k < 2, chim: rnd.Next(3) > 0);
-        taken.Add(V(x, z, 7));
-    }
-
-    // Pini: tronco + tre gradini di cilindri. Macchie di bosco (Perlin), sotto il limite della vegetazione, lontano da case, strada e piazza.
-    static void Pini(Transform p)
-    {
-        int n = 0;
-        var cols = new[] { new Color(.1f, .25f, .12f), new Color(.12f, .28f, .14f), new Color(.08f, .22f, .13f) };
-        for (int i = 0; i < 1500 && n < 220; i++)
-        {
-            float x = Mathf.Lerp(-120, 125, (float)rnd.NextDouble()), z = Mathf.Lerp(-150, 110, (float)rnd.NextDouble());
-            if (x > -30 && x < 45 && z > -55 && z < 30) continue;
-            if (Mathf.Abs(x - 29.5f) < 4 && z < 22) continue;
-            if (x > 80 && x < 125 && z > -30 && z < 40) continue;
-            if (Mathf.PerlinNoise(x * .03f + 11, z * .03f) < .45f) continue;
-            float y = H(x, z);
-            if (y > 38) continue;
-            bool ok = true;
-            foreach (var t in taken) if ((new Vector2(t.x - x, t.y - z)).sqrMagnitude < t.z * t.z) { ok = false; break; }
-            if (!ok) continue;
-            n++;
-            float s = 1.2f + (float)rnd.NextDouble();
-            var g = G(p, "Pino", x, y, z);
-            var col = cols[rnd.Next(cols.Length)];
-            C(g, V(0, s * .8f, 0), V(.35f * s, .8f * s, .35f * s), WoodD, null, false, PrimitiveType.Cylinder);
-            for (int j = 0; j < 3; j++) C(g, V(0, (2.2f + j * 1.3f) * s, 0), V((3.2f - j * .9f) * s, .6f * s, (3.2f - j * .9f) * s), col, null, false, PrimitiveType.Cylinder);
-        }
     }
 }

@@ -66,7 +66,7 @@ Comandi in gioco: WASD e mouse, E usa e prende, clic sinistro posa, clic destro 
 
 ## Unity
 - [ ] Importare `.obj` e texture (`obj_v3/`), impostando le texture in modalità Repeat.
-- [ ] Rilievo come Terrain da `dati/canolo_quote.json`.
+- [x] Rilievo come Terrain da `dati/canolo_quote.json`: il "Fuori" della piazza è Canolo vero (`Assets/src/Game/World/Canolo.cs`: Terrain 5 km, edifici estrusi, strade, recinti, bosco, serra, laghetto; trasformazione e crediti nel file e in `CREDITS.md`). Da verificare nell'editor: tetti, finestre, prestazioni, raccordo del terreno con la piazza.
 - [ ] Pipeline URP: shader di usura, post-processing (vignetta, grana, nebbia), stile PS1 opzionale.
 - [ ] Sostituire i segnaposto dei personaggi con i modelli scelti.
 
