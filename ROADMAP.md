@@ -68,7 +68,7 @@ Comandi in gioco: WASD e mouse, E usa e prende, clic sinistro posa, clic destro 
 - [ ] Altri luoghi: cabina telefonica, ufficio postale, scuola, cimitero, funivia dismessa.
 
 ## Unity
-- [~] Importare `.obj` e texture (`obj_v3/`): importati in `Assets/Models/v3` con texture (ObjMaterialFix), da sostituire alle primitive.
+- [~] Importare `.obj` e texture (`obj_v3/`): importati in `Assets/Resources/Models/v3` (caricati con Resources.Load) con texture (ObjMaterialFix), da sostituire alle primitive.
 - [x] Rilievo come Terrain da `dati/canolo_quote.json`: il "Fuori" della piazza è Canolo vero (`Assets/src/Game/World/Canolo.cs`: Terrain 5 km, edifici estrusi, strade, recinti, bosco, serra, laghetto; trasformazione e crediti nel file e in `CREDITS.md`). Da verificare nell'editor: tetti, finestre, prestazioni, raccordo del terreno con la piazza.
 - [ ] Pipeline URP: shader di usura, post-processing (vignetta, grana, nebbia), stile PS1 opzionale.
 - [ ] Sostituire i segnaposto dei personaggi con i modelli scelti.
