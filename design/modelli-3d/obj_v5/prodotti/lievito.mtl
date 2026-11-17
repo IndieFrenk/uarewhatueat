@@ -1,0 +1,6 @@
+newmtl cartone_d9261c
+Kd 0.851 0.149 0.110
+map_Kd texture/cartone.png
+newmtl stampa_a_ffffff
+Kd 1.000 1.000 1.000
+map_Kd texture/stampa_a.png
