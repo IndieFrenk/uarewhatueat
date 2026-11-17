@@ -86,11 +86,11 @@ public class InteractionPromptUI : MonoBehaviour
                 
                 if (item.HasPrice())
                 {
-                    message += $" - €{item.assignedPrice:F2}";
+                    message += $" - {item.assignedPrice} lire";
                 }
                 else
                 {
-                    message += " - No price";
+                    message += " - senza prezzo";
                 }
 
                 ShowPrompt(message);
