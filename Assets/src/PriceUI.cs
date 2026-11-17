@@ -36,10 +36,11 @@ public class PriceUI : MonoBehaviour
         }
         labels[Mult.Length] = "Annulla";
 
-        float range = GlobalConfig.Instance != null ? GlobalConfig.Instance.priceAcceptanceRange : 0.2f;
+        var cfg = GlobalConfig.Instance;
+        float free = cfg != null ? cfg.priceFreeMargin : 0.05f, zero = cfg != null ? cfg.priceZeroAt : 0.4f;
         int cost = item.Product != null ? item.Product.Cost : 0;
         string body = $"Listino: {basePrice} lire. Costo d'acquisto: {cost} lire.\n" +
-                      $"Oltre {Mathf.RoundToInt(basePrice * (1f + range))} lire i clienti dicono \"troppo caro\".\n" +
+                      $"Oltre {Mathf.RoundToInt(basePrice * (1f + free))} lire alcuni clienti rinunciano, oltre {Mathf.RoundToInt(basePrice * (1f + zero))} nessuno compra.\n" +
                       (item.HasPrice() ? $"Prezzo attuale: {item.assignedPrice} lire." : "Nessun prezzo assegnato.");
 
         UIKit.Choices(item.itemName, body, labels, i =>
