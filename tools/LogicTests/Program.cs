@@ -8,6 +8,7 @@ static class Program
         try
         {
             RulesTests.Run();
+            DataTests.Run();
             return 0;
         }
         catch (Exception e)
