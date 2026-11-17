@@ -65,7 +65,7 @@ public static class StoryTexts
             ("«Quando passa la luce sulla valle io chiudo le imposte e dico il rosario. Non per Dio. Per rispetto. Non si guarda chi mangia.»",
              "Caterina chiude le imposte quando passa la luce sulla valle: «non si guarda chi mangia»."),
         },
-        ["maestra"] = new[]
+        ["lucia"] = new[]
         {
             ("Lucia fa un tiro e soffia il fumo di lato, per non farlo arrivare a te. «La tua Giulia è sveglia, sai. Ma disegna cose strane sul quaderno. Segni, righe. L'accompagno io a scuola, tranquillo.»",
              "Lucia dice che Giulia disegna segni strani sul quaderno."),
@@ -132,7 +132,7 @@ public static class StoryTexts
             case "fioraia": return "Assunta ti guarda a lungo. «Sei stanco, ti vedo.» Non ti dà torto, ma nemmeno ragione. Poi cambia discorso, e tutti fanno finta che tu non abbia parlato.";
             case "oste": return "Peppe sbuffa. «Mangiati! Qui l'unico che mangia sono io, e non ho mai fatto male a nessuno. Siediti, che ti metto qualcosa nel piatto.» Ridono tutti. Tu non hai fame.";
             case "vecchia": return "Caterina scuote la testa. «Hai bevuto troppo, bottegaio. Va' a casa dalla bambina.» Ti fa male, perché in parte ha ragione.";
-            case "maestra": return "Lucia spegne la sigaretta. «Ti capisco, ti hanno tolto tua moglie. Ma non dire queste cose davanti ai bambini. Mi fai paura.»";
+            case "lucia": return "Lucia spegne la sigaretta. «Ti capisco, ti hanno tolto tua moglie. Ma non dire queste cose davanti ai bambini. Mi fai paura.»";
             default: return $"{name} ride. «Ti sei bevuto il cervello, bottegaio?» Qualcuno al tavolo alza il bicchiere alla tua salute.";
         }
     }

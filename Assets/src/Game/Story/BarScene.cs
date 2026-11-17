@@ -9,7 +9,7 @@ using UnityEngine;
 /// </summary>
 public static class BarScene
 {
-    const string Consp = "cospirazionista";
+    const string Consp = "vittorio";
     const float HeedChance = 0.15f; // dar retta all'avvertimento (fioraia, maestra), cresce con i presi
 
     static readonly List<GameObject> spawned = new List<GameObject>();
@@ -146,7 +146,7 @@ public static class BarScene
         if (v.Warned) return StoryTexts.AlreadyWarned(v.Name);
         v.Warned = true;
         float chance = HeedChance + 0.05f * s.Villagers.Count(x => x.Taken);
-        if ((v.Id == "fioraia" || v.Id == "maestra") && s.Rng.NextDouble() < chance)
+        if ((v.Id == "fioraia" || v.Id == "lucia") && s.Rng.NextDouble() < chance)
         {
             // gli dà retta: da qui in poi mangia più naturale
             v.Habits.TryGetValue(FoodKind.Natural, out float w);

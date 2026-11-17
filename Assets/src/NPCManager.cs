@@ -77,7 +77,7 @@ public class Customer : Interactable
     float groundY;
     static Texture2D markTex;
 
-    public override string Prompt => $"E: saluta {V.Name}";
+    public override string Prompt => $"Saluta {V.Name}";
 
     static readonly (string role, string[] lines)[] Quips =
     {
@@ -311,7 +311,7 @@ public class Customer : Interactable
 public class CashRegister : Interactable
 {
     public NPCManager mgr;
-    public override string Prompt => "E: batti lo scontrino";
+    public override string Prompt => "Batti lo scontrino";
 
     public override void Interact()
     {

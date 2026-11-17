@@ -47,6 +47,11 @@ public static class Endings
         string t;
         switch (e)
         {
+            case Ending.Loss when s.Protagonist.Taken && !s.Daughter.Taken:
+                t = "Una mattina Giulia scende in cucina e la tua sedia è vuota. Il letto è fatto, la finestra chiusa.\n"
+                  + "Per sere intere hai lasciato che il bicchiere ti togliesse il segno, e ti ha tolto anche a lei.\n"
+                  + "In paese dicono che sei stato chiamato al cielo. Giulia apre il negozio da sola, perché non sa fare altro.";
+                break;
             case Ending.Loss:
                 t = "Una mattina la sedia di tua figlia è vuota. Il letto è fatto, la finestra chiusa.\n"
                   + "Per giorni hai contato merce e lire, e i segnali erano tutti là: le carte nello zaino, il marchio sempre più pallido.\n"

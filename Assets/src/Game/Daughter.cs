@@ -113,7 +113,7 @@ public class Daughter : Interactable
     void OnPhase(GamePhase p)
     {
         if (p != GamePhase.Morning || Data == null || Data.Taken) return;
-        if (sweetsLastNight > 0) UIKit.Toast(signs[(sweetsTotal - 1) % signs.Length], 6f);
-        else if (!Data.HasVisibleMark) UIKit.Toast("Giulia dorme ancora. Le guardi la fronte: niente segno.", 6f);
+        if (sweetsLastNight > 0) UIKit.Toast(signs[(sweetsTotal - 1) % signs.Length], 6f, true);
+        else if (!Data.HasVisibleMark) UIKit.Toast("Giulia dorme ancora. Le guardi la fronte: niente segno.", 6f, true);
     }
 }
