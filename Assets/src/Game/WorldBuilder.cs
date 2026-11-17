@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 
 /// <summary>
-/// Costruisce da codice negozio, casa, bar e piazza (solo primitive) e riempie WorldAnchors.
+/// Costruisce da codice negozio, casa, bar e piazza e riempie WorldAnchors. Le primitive restano come collider e punti di gioco; i modelli v4/v5 le ricoprono.
 /// Luoghi separati nello spazio: negozio vicino all'origine, piazza a z negativo, casa a x=100, bar a x=200.
 /// </summary>
 public static class WorldBuilder
@@ -212,6 +212,16 @@ public static class WorldBuilder
         Box("Letto", p, new Vector3(106.1f, .25f, 1.2f), new Vector3(1.4f, .5f, 2f), new Color(.5f, .3f, .3f));
         Box("Cuscino", p, new Vector3(106.1f, .57f, .4f), new Vector3(.9f, .15f, .4f), Color.white);
         Lamp(p, new Vector3(103.5f, 2.3f, 2.5f), Warm);
+        // modello v5 (guscio con finestre e porta, arredi, cornice, lampadario): nel file sta in coordinate della stanza, quindi a (100, 0, 0) senza rotazione.
+        // Le primitive restano come collider e oggetti di gioco ("Specchio" e "TV" li cercano per nome) ma non si vedono; il quad dello specchio resta visibile.
+        var model = Model("casa_interno", p, new Vector3(100, 0, 0));
+        if (model == null) return;
+        Block("Credenza", p, new Vector3(101.1f, .5f, .225f), new Vector3(1.6f, 1f, .45f));
+        Block("Comodino", p, new Vector3(105.1f, .3f, .4f), new Vector3(.4f, .6f, .4f));
+        Block("Lettino", p, new Vector3(101.3f, .25f, 3f), new Vector3(.8f, .5f, 1.6f)); // dove sta Giulia (HomeSpawn + (-1,5; 0; 1,8))
+        var tv = p.Find("TV");
+        if (tv != null) { tv.position = new Vector3(100.35f, .82f, 2f); tv.localScale = new Vector3(.4f, .56f, .9f); } // stessa sagoma del televisore a tubo del modello
+        HideBut(p, model.transform, "Specchio");
     }
 
     // ---------------- BAR ----------------
@@ -233,14 +243,30 @@ public static class WorldBuilder
             Stool(p, seats, x + .8f, 2.2f, 270);
         }
         WorldAnchors.BarSeats = seats.ToArray();
-        Lamp(p, new Vector3(205, 2.6f, 2.5f), new Color(1f, .75f, .45f));
-        Lamp(p, new Vector3(205, 2.6f, 5f), new Color(1f, .75f, .45f));
+        Lamp(p, new Vector3(205, 2.5f, 2.5f), new Color(1f, .75f, .45f)); // sotto le campane del modello (bordo a 2,56)
+        Lamp(p, new Vector3(205, 2.5f, 5f), new Color(1f, .75f, .45f));
+        // modello v5 del bar (guscio, bancone, retro-banco con bottiglie, tavolini, flipper, gelati, TV, insegna al neon): coordinate della stanza, posato a (200, 0, 0).
+        var model = Model("bar_interno", p, new Vector3(200, 0, 0));
+        if (model == null) return;
+        Block("Flipper", p, new Vector3(200.62f, .45f, 3.7f), new Vector3(1.2f, .9f, .6f));
+        Block("FrigoGelati", p, new Vector3(209.65f, .9f, 3.75f), new Vector3(.7f, 1.8f, .7f));
+        HideBut(p, model.transform);
     }
 
     static void Stool(Transform p, List<Transform> seats, float x, float z, float yaw)
     {
         Box("Sgabello", p, new Vector3(x, .3f, z), new Vector3(.35f, .3f, .35f), Grey, false, PrimitiveType.Cylinder);
         seats.Add(Pt("Posto", p, x, z, yaw));
+    }
+
+    // Collider invisibile (primitiva senza renderer) per un arredo che nel modello non aveva una primitiva.
+    static void Block(string name, Transform p, Vector3 center, Vector3 size) => Box(name, p, center, size, Grey).GetComponent<Renderer>().enabled = false;
+
+    // Spegne i renderer delle primitive di un luogo, tranne quelli del modello 'model' e gli oggetti con i nomi in 'keep'; i collider restano.
+    static void HideBut(Transform p, Transform model, params string[] keep)
+    {
+        foreach (var r in p.GetComponentsInChildren<Renderer>())
+            if (r.transform != model && !r.transform.IsChildOf(model) && System.Array.IndexOf(keep, r.name) < 0) r.enabled = false;
     }
 
     // ---------------- PIAZZA ----------------
@@ -335,11 +361,11 @@ public static class WorldBuilder
         return g;
     }
 
-    // Istanzia Resources/Models/v4/<name> (o v3) (pos e yaw locali a parent). center: pos = centro in pianta e piede del modello (altrimenti pos = origine).
+    // Istanzia Resources/Models/v4/<name> (poi v3, poi v5/interni) (pos e yaw locali a parent). center: pos = centro in pianta e piede del modello (altrimenti pos = origine).
     // collider: BoxCollider dai bounds. Ritorna null se il modello manca: il chiamante tiene la primitiva.
     internal static GameObject Model(string name, Transform parent, Vector3 pos, float yaw = 0, float scale = 1, bool collider = false, bool center = false)
     {
-        var prefab = Resources.Load<GameObject>("Models/v4/" + name) ?? Resources.Load<GameObject>("Models/v3/" + name);
+        var prefab = Resources.Load<GameObject>("Models/v4/" + name) ?? Resources.Load<GameObject>("Models/v3/" + name) ?? Resources.Load<GameObject>("Models/v5/interni/" + name);
         if (prefab == null) return null;
         var g = Object.Instantiate(prefab, parent, false);
         g.name = name;
