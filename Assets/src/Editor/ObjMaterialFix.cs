@@ -8,6 +8,12 @@ using UnityEngine;
 /// </summary>
 class ObjMaterialFix : AssetPostprocessor
 {
+    // Canolo.cs fonde i modelli degli edifici in mesh per (materiale, cella): servono leggibili.
+    void OnPreprocessModel()
+    {
+        if (assetPath.StartsWith("Assets/Resources/Models/v5/canolo/") && assetImporter is ModelImporter mi) mi.isReadable = true;
+    }
+
     void OnPreprocessMaterialDescription(MaterialDescription d, Material m, AnimationClip[] clips)
     {
         if (!assetPath.StartsWith("Assets/Resources/Models/") || !assetPath.EndsWith(".obj")) return;
