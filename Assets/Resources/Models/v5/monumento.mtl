@@ -1,0 +1,14 @@
+newmtl pietra_b3ada0
+Kd 0.702 0.678 0.627
+map_Kd texture/pietra.png
+newmtl pietra_a8a290
+Kd 0.659 0.635 0.565
+map_Kd texture/pietra.png
+newmtl pietra_b8b2a0
+Kd 0.722 0.698 0.627
+map_Kd texture/pietra.png
+newmtl metallo_3a3d40
+Kd 0.227 0.239 0.251
+map_Kd texture/metallo.png
+newmtl liscio_c9a227
+Kd 0.788 0.635 0.153

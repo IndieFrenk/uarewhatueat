@@ -1,0 +1,6 @@
+newmtl legno_7a5a38
+Kd 0.478 0.353 0.220
+map_Kd texture/legno.png
+newmtl legno_8a6a44
+Kd 0.541 0.416 0.267
+map_Kd texture/legno.png
