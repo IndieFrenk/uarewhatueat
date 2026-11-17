@@ -142,8 +142,11 @@ public class GlobalConfig : MonoBehaviour
     [Tooltip("Giorno da cui la figlia inizia a disegnare")]
     public int daughterDrawStartDay = 3;
     [Header("=== CAMION ===")]
-    [Tooltip("Sconto per i prodotti industriali al camion")]
-    public float truckDiscountIndustrial = 0.2f;
+    [Tooltip("Sconto per i prodotti industriali al camion (0.4 = pagati il 60% del listino di costo)")]
+    public float truckIndustrialDiscount = 0.4f;
+
+    [Tooltip("Ricarico sui freschi/naturali al camion (0.12 = pagati il 112% del costo): tiene stretto il margine del naturale")]
+    public float truckSurchargeNatural = 0.12f;
 
     [Tooltip("Pezzi per ordine")]
     public int truckOrderQuantity = 5;
@@ -188,10 +191,16 @@ public class GlobalConfig : MonoBehaviour
     public Color nightFogColor = new Color(0.03f, 0.04f, 0.07f);
 
     [Tooltip("Intensità della luce ambientale di notte (1 = come di giorno)")]
-    public float nightAmbientIntensity = 0.25f;
+    public float nightAmbientIntensity = 0.45f;
+
+    [Tooltip("Scala la nebbia che si somma alla densità minima di notte (1 = come da fogDensity*, 0.45 = cupa ma si leggono ancora gli edifici)")]
+    [Range(0.1f, 1f)] public float nightFogScale = 0.45f;
+
+    [Tooltip("Esposizione del cielo di notte rispetto al giorno (1 = invariata, 0.25 = cielo scuro ma non nero)")]
+    [Range(0.02f, 1f)] public float nightSkyExposure = 0.25f;
 
     [Tooltip("Moltiplicatore della luce direzionale di notte (si applica a nightLightIntensity)")]
-    public float nightSunMultiplier = 0.5f;
+    public float nightSunMultiplier = 1.3f;
 
     [Tooltip("Moltiplicatore densità nebbia per ogni giorno passato")]
     public float fogDensityDayMultiplier = 0.005f;
