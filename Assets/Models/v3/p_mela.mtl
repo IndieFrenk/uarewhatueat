@@ -1,0 +1,12 @@
+newmtl cartone_b8a07a
+Kd 0.722 0.627 0.478
+map_Kd texture/cartone.png
+newmtl pelle_a52b24
+Kd 0.647 0.169 0.141
+map_Kd texture/pelle.png
+newmtl corteccia_4a3320
+Kd 0.290 0.200 0.125
+map_Kd texture/corteccia.png
+newmtl pelle_c5a02e
+Kd 0.773 0.627 0.180
+map_Kd texture/pelle.png
