@@ -14,12 +14,14 @@ public static class WorldBuilder
     static readonly Color Warm = new Color(1f, .9f, .7f), Glass = new Color(.6f, .8f, .9f);
 
     static readonly Dictionary<(Color, bool), Material> mats = new Dictionary<(Color, bool), Material>();
+    static readonly List<(Material, Color)> emissiveMats = new List<(Material, Color)>();  // materiali ad emissione, colore originale
     static Shader lit;
     static Transform root, plazaCasa, plazaBar;
 
     public static void Build()
     {
         mats.Clear();
+        emissiveMats.Clear();
         root = new GameObject("Mondo").transform;
         var pt = new GameObject("Punti").transform;
         pt.SetParent(root);
@@ -35,6 +37,7 @@ public static class WorldBuilder
         BuildPlaza();
         EnsurePlayer();
         VillageDressing.Build();
+        root.gameObject.AddComponent<EmissionController>().Initialize(emissiveMats);
     }
 
     // ---------------- NEGOZIO ----------------
@@ -270,7 +273,7 @@ public static class WorldBuilder
         {
             if (lit == null) lit = Shader.Find("Universal Render Pipeline/Lit");
             m = new Material(lit) { color = c };
-            if (emit) { m.EnableKeyword("_EMISSION"); m.SetColor("_EmissionColor", c * 2f); }
+            if (emit) { m.EnableKeyword("_EMISSION"); m.SetColor("_EmissionColor", c * 2f); if (c == VillageDressing.Lit) emissiveMats.Add((m, c * 2f)); } // solo finestre: luci interne, insegne e lampioni restano accesi
             mats[(c, emit)] = m;
         }
         return m;
