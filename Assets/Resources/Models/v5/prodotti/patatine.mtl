@@ -1,0 +1,9 @@
+newmtl stampa_b_d6279a
+Kd 0.839 0.153 0.604
+map_Kd texture/stampa_b.png
+newmtl metallo_e8e8e8
+Kd 0.910 0.910 0.910
+map_Kd texture/metallo.png
+newmtl stampa_a_f2d21b
+Kd 0.949 0.824 0.106
+map_Kd texture/stampa_a.png

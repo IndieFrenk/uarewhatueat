@@ -1,0 +1,13 @@
+newmtl crosta_d98a82
+Kd 0.851 0.541 0.510
+map_Kd texture/crosta.png
+newmtl liscio_f2d4cc
+Kd 0.949 0.831 0.800
+newmtl cartone_e8dcc0
+Kd 0.910 0.863 0.753
+map_Kd texture/cartone.png
+newmtl liscio_f4e8dc
+Kd 0.957 0.910 0.863
+newmtl cartone_8a6a3a
+Kd 0.541 0.416 0.227
+map_Kd texture/cartone.png

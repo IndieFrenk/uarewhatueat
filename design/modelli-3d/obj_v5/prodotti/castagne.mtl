@@ -1,0 +1,9 @@
+newmtl legno_9a7444
+Kd 0.604 0.455 0.267
+map_Kd texture/legno.png
+newmtl legno_a98250
+Kd 0.663 0.510 0.314
+map_Kd texture/legno.png
+newmtl corteccia_6b3a1c
+Kd 0.420 0.227 0.110
+map_Kd texture/corteccia.png
