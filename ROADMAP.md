@@ -22,22 +22,26 @@ Fase 0, contratti (Opus):
 - [x] Motore scelto, strumenti di verifica, contratti condivisi (`Core`, `WorldAnchors`, `Interactable`, `UIKit`).
 
 Fase 1, sistemi base:
-- [ ] Regole del marchio, soldi senza bancarotta, presa notturna casuale e graduale, con test.
-- [ ] Catalogo prodotti anni 90 in lire (naturale, industriale, dolci, alcol, fumo) e paesani con abitudini.
-- [ ] Mondo costruito da codice: negozio da `negozio_layout.json`, casa, bar, passaggi tra i luoghi, scena di gioco.
-- [ ] Flusso della giornata: orologio fermo nei momenti di respiro, fasi (mattina, negozio, pranzo, negozio, sera, bar, notte), 7 giorni.
-- [ ] HUD: ora, giorno, soldi, prompt di interazione, notifiche.
+- [x] Regole del marchio, soldi senza bancarotta, presa notturna casuale e graduale, con test.
+- [x] Catalogo prodotti anni 90 in lire (naturale, industriale, dolci, alcol, fumo) e paesani con abitudini.
+- [x] Mondo costruito da codice: negozio da `negozio_layout.json`, casa, bar, passaggi tra i luoghi, scena di gioco.
+- [x] Flusso della giornata: orologio fermo nei momenti di respiro, fasi (mattina, negozio, pranzo, negozio, sera, bar, notte), 7 giorni.
+- [x] HUD: ora, giorno, soldi, prompt di interazione, notifiche.
 
 Fase 2, gameplay:
-- [ ] Clienti: entrano, prendono prodotti dagli scaffali, fanno la fila, pagano alla cassa se il prezzo va bene. Quello che comprano finisce nella loro dieta.
-- [ ] Ordini al camion: menu nel magazzino, consegna la mattina dopo, industriale in offerta.
-- [ ] Dialoghi: bar la sera, cospirazionista, TG del mattino, avvertire i paesani (deriso), pezzi della scritta e decifrazione.
-- [ ] Figlia: cena scelta dal padre, dolci di nascosto, segnali (carte di caramelle, marchio sbiadito). Specchio per vedere la propria fronte.
-- [ ] Atmosfera: luci che tremolano, nebbia, la luce sopra la valle nelle notti di presa, vuoti lasciati dai presi.
+- [x] Clienti: entrano, prendono prodotti dagli scaffali, fanno la fila, pagano alla cassa se il prezzo va bene. Quello che comprano finisce nella loro dieta.
+- [x] Ordini al camion: menu nel magazzino, consegna la mattina dopo, industriale in offerta.
+- [x] Dialoghi: bar la sera, cospirazionista, TG del mattino, avvertire i paesani (deriso), pezzi della scritta e decifrazione.
+- [x] Figlia: cena scelta dal padre, dolci di nascosto, segnali (carte di caramelle, marchio sbiadito). Specchio per vedere la propria fronte.
+- [x] Atmosfera: luci che tremolano, nebbia, la luce sopra la valle nelle notti di presa, vuoti lasciati dai presi.
 
 Fase 3, chiusura:
-- [ ] Finali (perdita, salvo da soli, salvezza condivisa, amaro) e schermata finale.
+- [x] Finali (perdita, salvo da soli, salvezza condivisa, amaro) e schermata finale.
+- [ ] Primo playtest nell'editor: menu «uarewhatueat/Crea scena di gioco», apri `Assets/Scenes/Game.unity`, Play. Il codice compila e la logica è testata, ma nessuno l'ha ancora fatto girare in Unity.
 - [ ] Bilanciamento in `GlobalConfig`, giro completo di 7 giorni, correzioni.
+- [ ] Includere lo shader «Universal Render Pipeline/Lit» tra quelli sempre inclusi prima di fare una build (il mondo usa `Shader.Find`).
+
+Comandi in gioco: WASD e mouse, E usa e prende, clic sinistro posa, clic destro lancia, P prezzo dell'oggetto in mano, N passa alla fase dopo nei momenti di respiro, J quaderno degli indizi.
 
 ## Modelli 3D e mondo (cartella `design/modelli-3d`)
 - [x] v1: schema di negozio, personaggi, paese, prodotti.
