@@ -1,0 +1,6 @@
+newmtl stampa_a_2f6fcf
+Kd 0.184 0.435 0.812
+map_Kd texture/stampa_a.png
+newmtl metallo_c8ccd0
+Kd 0.784 0.800 0.816
+map_Kd texture/metallo.png

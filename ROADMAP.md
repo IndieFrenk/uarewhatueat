@@ -1,6 +1,6 @@
 # ROADMAP
 
-Stato al 16/11/2026. Legenda: [x] fatto, [~] fatto in parte, [ ] da fare.
+Stato al 17/11/2026. Legenda: [x] fatto, [~] fatto in parte, [ ] da fare.
 
 ## Motore
 
@@ -37,9 +37,10 @@ Fase 2, gameplay:
 
 Fase 3, chiusura:
 - [x] Finali (perdita, salvo da soli, salvezza condivisa, amaro) e schermata finale.
-- [ ] Primo playtest nell'editor: menu «uarewhatueat/Crea scena di gioco», apri `Assets/Scenes/Game.unity`, Play. Il codice compila e la logica è testata, ma nessuno l'ha ancora fatto girare in Unity.
-- [ ] Bilanciamento in `GlobalConfig`, giro completo di 7 giorni, correzioni.
-- [ ] Includere lo shader «Universal Render Pipeline/Lit» tra quelli sempre inclusi prima di fare una build (il mondo usa `Shader.Find`).
+- [x] Primo playtest nell'editor: menu «uarewhatueat/Crea scena di gioco», apri `Assets/Scenes/Game.unity`, Play. Giocati 7 giorni fino al finale, corretti Vittorio e Lucia mai attivi (id vs ruolo), segnali di Giulia coperti dal toast, finale se viene preso il padre, prompt E doppio.
+- [~] Bilanciamento in `GlobalConfig`, giro completo di 7 giorni: Vittorio prendibile dalla notte 4, bere al bar facoltativo, caffè, offrire da bere 3000 lire, spese fisse 25000 lire/giorno, merce del camion col prezzo base, orologio che corre al bar, notte più buia. Da ritarare giocando con mouse e tastiera.
+- [x] Includere lo shader «Universal Render Pipeline/Lit» e «Universal Render Pipeline/Terrain Lit» tra quelli sempre inclusi prima di fare una build (il mondo usa `Shader.Find`).
+- [x] Tasto N ignorato con menu aperto/input bloccato.
 
 Comandi in gioco: WASD e mouse, E usa e prende, clic sinistro posa, clic destro lancia, P prezzo dell'oggetto in mano, N passa alla fase dopo nei momenti di respiro, J quaderno degli indizi.
 
@@ -50,7 +51,9 @@ Comandi in gioco: WASD e mouse, E usa e prende, clic sinistro posa, clic destro 
   - [x] Personaggi: controllo delle sovrapposizioni di mesh (`strumenti/controlla_mesh.py`) e correzione delle facce complanari (cinture, suole, grembiuli, fusciacca, spalle).
   - [ ] Personaggi: Francesco cerca i modelli. Quelli attuali restano segnaposto e **non vengono salvati come file** nella repo. Rimettere il marchio come decal sui modelli nuovi.
   - [x] Banco affettati dettagliato: vetrina con vassoi, mortadella e formaggi, prosciutto su morsa con coltello, bilancia con display, affettatrice (lama, protezione, carrello, affilatoio, manopola), carta oleata, coltelliera, prosciutti e salami appesi.
-  - [~] Canolo Nuovo (RC) ricostruito sulla planimetria reale: rilievo EU-DEM, 148 edifici con la sagoma vera girati verso la strada, strade, recinti, bosco, serra, laghetto, chiesa «Madonna della Neve».
+  - [x] Paese da codice (VillageDressing): chiesa con campanile, macelleria, fioraio, tabacchi, osteria, fontana, panchine, monumento, cabina SIP, auto, insegne; negozio esterno a due piani.
+  - [x] Prodotti riconoscibili (ProductLook): bottiglie, scatole, sacchetti, salumi, etichette per industriale.
+  - [~] Canolo Nuovo (RC) ricostruito sulla planimetria reale: rilievo EU-DEM, 148 edifici con la sagoma vera girati verso la strada, strade, recinti, bosco, serra, laghetto, chiesa «Madonna della Neve». In corso: Terrain da `dati/canolo_quote.json` e sagome edifici fuori dalla piazza.
     - [ ] Confermare quali edifici sono negozio, macelleria, osteria e negozio di piante (oggi scelti per vicinanza al centro).
     - [ ] Rifinire: tetti diversi per forma, balconi, muri a secco, vegetazione varia (castagni, ulivi), illuminazione notturna del paese.
     - [ ] Rilievo più fitto vicino al centro (oggi circa 15 m) e strade che seguono il terreno con scarpate.
@@ -65,10 +68,15 @@ Comandi in gioco: WASD e mouse, E usa e prende, clic sinistro posa, clic destro 
 - [ ] Altri luoghi: cabina telefonica, ufficio postale, scuola, cimitero, funivia dismessa.
 
 ## Unity
-- [ ] Importare `.obj` e texture (`obj_v3/`), impostando le texture in modalità Repeat.
+- [~] Importare `.obj` e texture (`obj_v3/`): importati in `Assets/Models/v3` con texture (ObjMaterialFix), da sostituire alle primitive.
 - [x] Rilievo come Terrain da `dati/canolo_quote.json`: il "Fuori" della piazza è Canolo vero (`Assets/src/Game/World/Canolo.cs`: Terrain 5 km, edifici estrusi, strade, recinti, bosco, serra, laghetto; trasformazione e crediti nel file e in `CREDITS.md`). Da verificare nell'editor: tetti, finestre, prestazioni, raccordo del terreno con la piazza.
 - [ ] Pipeline URP: shader di usura, post-processing (vignetta, grana, nebbia), stile PS1 opzionale.
 - [ ] Sostituire i segnaposto dei personaggi con i modelli scelti.
+
+## Da fare ancora
+- [ ] Prova di magazzino e controlli reali con mouse e tastiera.
+- [ ] Ritarare spese fisse e margini (industriale vs naturale).
+- [ ] Verificare leggibilità delle etichette dei prodotti.
 
 ## Dati e licenze
 - Mappa: © OpenStreetMap contributors (ODbL). Quote: EU-DEM 25 m. Vedi `design/modelli-3d/dati/LEGGIMI.md`.

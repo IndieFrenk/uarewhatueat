@@ -1,0 +1,8 @@
+newmtl pietra_8d8d87
+Kd 0.553 0.553 0.529
+map_Kd texture/pietra.png
+newmtl pietra_a3a39c
+Kd 0.639 0.639 0.612
+map_Kd texture/pietra.png
+newmtl liscio_4f7f8f
+Kd 0.310 0.498 0.561
