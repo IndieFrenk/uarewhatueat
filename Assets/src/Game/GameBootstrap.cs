@@ -7,6 +7,7 @@ using UnityEngine;
 ///   [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
 ///   static void Hook() => GameBootstrap.Ready += () => new GameObject(nameof(MioSistema)).AddComponent&lt;MioSistema&gt;();
 /// </summary>
+[DefaultExecutionOrder(-1000)] // Start prima dei componenti del mondo cotto nella scena (EmissionController usa GameState)
 public class GameBootstrap : MonoBehaviour
 {
     public static event Action Ready;
@@ -20,7 +21,7 @@ public class GameBootstrap : MonoBehaviour
         GameState.Current = new GameState(seed != 0 ? seed : Environment.TickCount, cfg.startingSavings);
         Roster.Populate(GameState.Current);
         UIKit.Ensure();
-        WorldBuilder.Build();
+        if (FindAnyObjectByType<WorldAnchorsData>() == null) WorldBuilder.Build(); // altrimenti il mondo è già cotto nella scena
         Ready?.Invoke();
     }
 

@@ -15,7 +15,7 @@ Verifiche senza aprire l'editor:
 - `Assets/src/Core`: logica pura senza UnityEngine (`GameState`, `MarkRules`, `Economy`, `Villager`, `Product`). Testabile.
 - `Assets/src/Game`: sistemi Unity (mondo, clienti, flusso della giornata, dialoghi, atmosfera). `WorldAnchors` collega il mondo ai sistemi.
 - `Assets/src/UI`: UI costruita da codice (`UIKit`: notifiche, menu a scelte).
-- Il mondo si costruisce da codice (`GameBootstrap` + `WorldBuilder`) partendo da `negozio_layout.json`, così la scena non va montata a mano.
+- Il mondo si costruisce da codice (`GameBootstrap` + `WorldBuilder`) partendo da `negozio_layout.json`, così la scena non va montata a mano. Il menu «uarewhatueat/Cuoci il mondo nella scena» lo salva dentro `Game.unity` (mesh e materiali generati in `Game_Mondo.asset`) per vederlo e ritoccarlo nell'editor; in Play `GameBootstrap` non lo ricostruisce. Dopo modifiche a `WorldBuilder` va ricotto (perde i ritocchi a mano).
 
 ## Gioco: funzionalità essenziali
 Fase 0, contratti (Opus):

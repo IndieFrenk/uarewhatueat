@@ -284,7 +284,7 @@ public static class Canolo
         go.name = "Rilievo";
         go.transform.SetParent(p);
         go.transform.position = new Vector3(x0, yMin, z0);
-        Object.Destroy(go.GetComponent<TerrainCollider>()); // lontano e irraggiungibile
+        Object.DestroyImmediate(go.GetComponent<TerrainCollider>()); // lontano e irraggiungibile
         var t = go.GetComponent<Terrain>();
         t.heightmapPixelError = 4;
         t.shadowCastingMode = ShadowCastingMode.Off;
