@@ -39,6 +39,7 @@ public static class WorldBuilder
         EnsurePlayer();
         VillageDressing.Build();
         root.gameObject.AddComponent<EmissionController>().Initialize(emissiveMats);
+        root.gameObject.AddComponent<WorldAnchorsData>().Save();
     }
 
     // ---------------- NEGOZIO ----------------

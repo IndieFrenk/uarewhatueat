@@ -6,11 +6,20 @@ using UnityEngine;
 /// </summary>
 public class EmissionController : MonoBehaviour
 {
-    private List<(Material, Color)> emissiveMats;
+    // serializzati: col mondo cotto nella scena arrivano già pronti
+    [SerializeField] Material[] materials;
+    [SerializeField] Color[] colors;
 
     public void Initialize(List<(Material, Color)> mats)
     {
-        emissiveMats = new List<(Material, Color)>(mats);
+        materials = new Material[mats.Count];
+        colors = new Color[mats.Count];
+        for (int i = 0; i < mats.Count; i++) (materials[i], colors[i]) = mats[i];
+    }
+
+    // GameBootstrap gira prima (DefaultExecutionOrder), quindi GameState.Current c'è già
+    void Start()
+    {
         GameState.Current.PhaseChanged += OnPhaseChanged;
         // Applica lo stato iniziale
         OnPhaseChanged(GameState.Current.Phase);
@@ -19,13 +28,8 @@ public class EmissionController : MonoBehaviour
     private void OnPhaseChanged(GamePhase phase)
     {
         bool isEvening = phase == GamePhase.Evening || phase == GamePhase.Bar || phase == GamePhase.Night;
-        foreach (var (material, originalColor) in emissiveMats)
-        {
-            if (material != null)
-            {
-                material.SetColor("_EmissionColor", isEvening ? originalColor : Color.black);
-            }
-        }
+        for (int i = 0; i < materials.Length; i++)
+            if (materials[i] != null) materials[i].SetColor("_EmissionColor", isEvening ? colors[i] : Color.black);
     }
 
     private void OnDestroy()
